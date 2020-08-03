@@ -109,7 +109,7 @@ export function difference<K, V>(
 ): GetterWithEntries<K, V> {
   const get = (input?: K) => {
     if (input === undefined) {
-      return function*() {
+      return (function*() {
         const iterator = a()[Symbol.iterator]();
 
         while (true) {
@@ -124,7 +124,7 @@ export function difference<K, V>(
 
           yield item.value;
         }
-      }();
+      })();
       // const result = new Map<K, V>(a());
       // for (const [key] of Array.from(b())) {
       //   result.delete(key);
@@ -148,7 +148,7 @@ export function intersection<K, V>(
 ): GetterWithEntries<K, V> {
   const get = (input?: K) => {
     if (input === undefined) {
-      return function*() {
+      return (function*() {
         const iterator = a()[Symbol.iterator]();
 
         while (true) {
@@ -163,7 +163,7 @@ export function intersection<K, V>(
 
           yield item.value;
         }
-      }();
+      })();
     } else {
       const aResult = a(input);
       const bResult = b(input);
