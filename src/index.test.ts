@@ -6,17 +6,24 @@ import {
   union,
   difference,
   intersection,
+  create,
 } from './index';
 
 describe('emptySet', () => {
   it('always returns false', () => {
     expect(emptySet('anything')).toBe(false);
+    expect(emptySet('at')).toBe(false);
+    expect(emptySet('all')).toBe(false);
+    expect(emptySet('')).toBe(false);
   });
 });
 
 describe('universalSet', () => {
   it('always returns true', () => {
     expect(universalSet('anything')).toBe(true);
+    expect(universalSet('at')).toBe(true);
+    expect(universalSet('all')).toBe(true);
+    expect(universalSet('')).toBe(true);
   });
 });
 
@@ -201,6 +208,46 @@ describe('difference', () => {
       ])
     );
   });
+
+  it('works with a Map and an array', () => {
+    const [a] = lookup(
+      new Map([
+        ['first', 1],
+        ['second', 2],
+        ['third', -3],
+      ])
+    );
+    const [b] = lookup(['third', 'fourth']);
+    const get = difference(a, b);
+
+    expect(get('first')).toBe(1);
+    expect(get('second')).toBe(2);
+    expect(get('third')).toBe(undefined);
+    expect(get('fourth')).toBe(undefined);
+    expect(get('missing')).toBe(undefined);
+
+    expect(new Map(get())).toEqual(
+      new Map([
+        ['first', 1],
+        ['second', 2],
+      ])
+    );
+  });
+
+  it('works with a Set and a function', () => {
+    const [shows] = lookup(['The Americans', 'Breaking Bad', 'Boardwalk Empire', 'The Sopranos']);
+    const startingWithThe = (title: string) => title.startsWith('The ');
+    const showsNotStartingWithThe = difference(shows, startingWithThe);
+
+    expect(showsNotStartingWithThe('The Americans')).toEqual(false);
+    expect(showsNotStartingWithThe('The Sopranos')).toEqual(false);
+    expect(showsNotStartingWithThe('Breaking Bad')).toEqual(true);
+    expect(showsNotStartingWithThe('Boardwalk Empire')).toEqual(true);
+    expect(showsNotStartingWithThe('The Wire')).toEqual(false);
+    expect(create(showsNotStartingWithThe, Set)).toEqual(
+      new Set(['Breaking Bad', 'Boardwalk Empire'])
+    );
+  });
 });
 
 describe('intersection', () => {
@@ -261,5 +308,108 @@ describe('intersection', () => {
     expect(get('missing')).toBe(undefined);
 
     expect(new Map(get())).toEqual(new Map([['third', -3]]));
+  });
+
+  it('works with a Set and a function', () => {
+    const [shows] = lookup(['The Americans', 'Breaking Bad', 'Boardwalk Empire', 'The Sopranos']);
+    const startingWithThe = (title: string) => title.startsWith('The ');
+    const showsStartingWithThe = intersection(shows, startingWithThe);
+
+    expect(showsStartingWithThe('The Americans')).toEqual(true);
+    expect(showsStartingWithThe('The Sopranos')).toEqual(true);
+    expect(showsStartingWithThe('Breaking Bad')).toEqual(false);
+    expect(showsStartingWithThe('Boardwalk Empire')).toEqual(false);
+    expect(showsStartingWithThe('The Wire')).toEqual(false);
+    expect(create(showsStartingWithThe, Set)).toEqual(
+      new Set(['The Americans', 'The Sopranos'])
+    );
+  });
+});
+
+describe('create', () => {
+  describe('array input', () => {
+    it('works with Set', () => {
+      const [dramas] = lookup([
+        'The Americans',
+        'The Sopranos',
+        'Breaking Bad',
+      ]);
+
+      const dramasSet = create(dramas, Set);
+      expect(dramasSet).toEqual(
+        new Set(['The Americans', 'The Sopranos', 'Breaking Bad'])
+      );
+    });
+
+    it('works with Array', () => {
+      const [dramas] = lookup([
+        'The Americans',
+        'The Sopranos',
+        'Breaking Bad',
+      ]);
+
+      const dramasArray = create(dramas, Array);
+      expect(dramasArray.sort()).toEqual([
+        'Breaking Bad',
+        'The Americans',
+        'The Sopranos',
+      ]);
+    });
+  });
+
+  describe('array input', () => {
+    it('works with Set', () => {
+      const [dramas] = lookup(
+        new Map([
+          ['first', 1],
+          ['second', 2],
+          ['third', 3],
+        ])
+      );
+
+      const dramasSet = create(dramas, Set);
+      expect(dramasSet).toEqual(new Set(['first', 'second', 'third']));
+    });
+
+    it('works with Array', () => {
+      const [dramas] = lookup(
+        new Map([
+          ['first', 1],
+          ['second', 2],
+          ['third', 3],
+        ])
+      );
+
+      const dramasArray = create(dramas, Array);
+      expect(dramasArray.sort()).toEqual(['first', 'second', 'third']);
+    });
+  });
+});
+
+describe('example of everything', () => {
+  it('works', () => {
+    const [dramas] = lookup(['The Americans', 'The Sopranos', 'Breaking Bad']);
+    const [comedies] = lookup(['Flight of the Conchords']);
+
+    const shows = union(dramas, comedies);
+
+    shows('The Americans'); // true
+    shows('The Sopranos'); // true
+    shows('The Wire'); // false
+
+    expect(create(shows, Set)).toEqual(
+      new Set([
+        'The Americans',
+        'Flight of the Conchords',
+        'The Sopranos',
+        'Breaking Bad',
+      ])
+    );
+
+    const startingWithThe = (title: string) => title.startsWith('The ');
+    const showsStartingWithThe = intersection(shows, startingWithThe);
+    expect(create(showsStartingWithThe, Set)).toEqual(
+      new Set(['The Americans', 'The Sopranos'])
+    );
   });
 });

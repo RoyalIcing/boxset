@@ -105,7 +105,7 @@ export function union<K, V>(
 
 export function difference<K, V>(
   a: GetterWithEntries<K, V>,
-  b: GetterWithEntries<K, any>
+  b: Getter<K, any>
 ): GetterWithEntries<K, V> {
   const get = (input?: K) => {
     if (input === undefined) {
@@ -125,11 +125,6 @@ export function difference<K, V>(
           yield item.value;
         }
       })();
-      // const result = new Map<K, V>(a());
-      // for (const [key] of Array.from(b())) {
-      //   result.delete(key);
-      // }
-      // return result;
     } else {
       const bResult = b(input);
       if (bResult) {
@@ -144,7 +139,7 @@ export function difference<K, V>(
 
 export function intersection<K, V>(
   a: GetterWithEntries<K, V>,
-  b: GetterWithEntries<K, any>
+  b: Getter<K, any>
 ): GetterWithEntries<K, V> {
   const get = (input?: K) => {
     if (input === undefined) {
@@ -183,3 +178,46 @@ export function intersection<K, V>(
 // ): GetterWithEntries<K, V> {
 //   return difference(a, difference(a, b));
 // }
+
+export function justKeys<K, V>(input: Iterable<[K, V]>): Iterable<K> {
+  return (function*() {
+    const iterator = input[Symbol.iterator]();
+
+    while (true) {
+      let item = iterator.next();
+
+      if (item.done) {
+        return;
+      }
+
+      yield item.value[0];
+    }
+  })();
+}
+
+export function create<K, V>(
+  input: GetterWithEntries<K, V>,
+  collectionClass: ArrayConstructor
+): Array<K>;
+export function create<K, V>(
+  input: GetterWithEntries<K, V>,
+  collectionClass: SetConstructor
+): Set<K>;
+export function create<K, V>(
+  input: GetterWithEntries<K, V>,
+  collectionClass: MapConstructor
+): Map<K, V>;
+
+export function create<
+  K,
+  V,
+  Collection extends SetConstructor | ArrayConstructor | MapConstructor
+>(input: GetterWithEntries<K, V>, collectionClass: Collection) {
+  if (collectionClass === Set) {
+    return new Set<K>(justKeys(input()));
+  } else if (collectionClass === Array) {
+    return Array.from(justKeys(input()));
+  } else {
+    return new Map<K, V>(input());
+  }
+}
