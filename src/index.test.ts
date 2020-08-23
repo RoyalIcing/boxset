@@ -48,6 +48,12 @@ describe('lookup', () => {
     expect(get('first')).toBe(true);
     expect(get('second')).toBe(true);
     expect(get('missing')).toBe(false);
+    expect(new Map(get())).toEqual(
+      new Map([
+        ['first', true],
+        ['second', true],
+      ])
+    );
   });
 
   it('works with a Map’s keys', () => {
@@ -61,6 +67,12 @@ describe('lookup', () => {
     expect(get('first')).toBe(true);
     expect(get('second')).toBe(true);
     expect(get('missing')).toBe(false);
+    expect(new Map(get())).toEqual(
+      new Map([
+        ['first', true],
+        ['second', true],
+      ])
+    );
   });
 
   it('works with a Map', () => {
@@ -74,6 +86,12 @@ describe('lookup', () => {
     expect(get('first')).toBe(1);
     expect(get('second')).toBe(2);
     expect(get('missing')).toBe(undefined);
+    expect(new Map(get())).toEqual(
+      new Map([
+        ['first', 1],
+        ['second', 2],
+      ])
+    );
   });
 
   it('works with a FormData', () => {
@@ -85,6 +103,12 @@ describe('lookup', () => {
     expect(get('first')).toBe('ONE');
     expect(get('second')).toBe('TWO');
     expect(get('missing')).toBe(null);
+    expect(new Map(get())).toEqual(
+      new Map([
+        ['first', 'ONE'],
+        ['second', 'TWO'],
+      ])
+    );
   });
 });
 
