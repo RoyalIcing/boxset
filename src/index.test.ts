@@ -75,6 +75,17 @@ describe('lookup', () => {
     expect(get('second')).toBe(2);
     expect(get('missing')).toBe(undefined);
   });
+
+  it('works with a FormData', () => {
+    const formData = new FormData();
+    formData.set('first', 'ONE');
+    formData.set('second', 'TWO');
+    const [get] = lookup(formData);
+
+    expect(get('first')).toBe('ONE');
+    expect(get('second')).toBe('TWO');
+    expect(get('missing')).toBe(null);
+  });
 });
 
 describe('complement', () => {
@@ -235,7 +246,12 @@ describe('difference', () => {
   });
 
   it('works with a Set and a function', () => {
-    const [shows] = lookup(['The Americans', 'Breaking Bad', 'Boardwalk Empire', 'The Sopranos']);
+    const [shows] = lookup([
+      'The Americans',
+      'Breaking Bad',
+      'Boardwalk Empire',
+      'The Sopranos',
+    ]);
     const startingWithThe = (title: string) => title.startsWith('The ');
     const showsNotStartingWithThe = difference(shows, startingWithThe);
 
@@ -311,7 +327,12 @@ describe('intersection', () => {
   });
 
   it('works with a Set and a function', () => {
-    const [shows] = lookup(['The Americans', 'Breaking Bad', 'Boardwalk Empire', 'The Sopranos']);
+    const [shows] = lookup([
+      'The Americans',
+      'Breaking Bad',
+      'Boardwalk Empire',
+      'The Sopranos',
+    ]);
     const startingWithThe = (title: string) => title.startsWith('The ');
     const showsStartingWithThe = intersection(shows, startingWithThe);
 
@@ -327,7 +348,7 @@ describe('intersection', () => {
 });
 
 describe('create', () => {
-  describe('array input', () => {
+  describe('Array source', () => {
     it('works with Set', () => {
       const [dramas] = lookup([
         'The Americans',
@@ -355,9 +376,41 @@ describe('create', () => {
         'The Sopranos',
       ]);
     });
+
+    it('works with Object', () => {
+      const [dramas] = lookup([
+        'The Americans',
+        'The Sopranos',
+        'Breaking Bad',
+      ]);
+
+      const dramasMap = create(dramas, Map);
+      expect(dramasMap).toEqual(
+        new Map([
+          ['The Americans', true],
+          ['The Sopranos', true],
+          ['Breaking Bad', true],
+        ])
+      );
+    });
+
+    it('works with Object', () => {
+      const [dramas] = lookup([
+        'The Americans',
+        'The Sopranos',
+        'Breaking Bad',
+      ]);
+
+      const dramasObject = create(dramas, Object);
+      expect(dramasObject).toEqual({
+        'The Americans': true,
+        'The Sopranos': true,
+        'Breaking Bad': true,
+      });
+    });
   });
 
-  describe('array input', () => {
+  describe('Map source', () => {
     it('works with Set', () => {
       const [dramas] = lookup(
         new Map([
@@ -382,6 +435,38 @@ describe('create', () => {
 
       const dramasArray = create(dramas, Array);
       expect(dramasArray.sort()).toEqual(['first', 'second', 'third']);
+    });
+
+    it('works with Object', () => {
+      const [dramas] = lookup(
+        new Map([
+          ['first', 1],
+          ['second', 2],
+          ['third', 3],
+        ])
+      );
+
+      const dramasMap = create(dramas, Map);
+      expect(dramasMap).toEqual(
+        new Map([
+          ['first', 1],
+          ['second', 2],
+          ['third', 3],
+        ])
+      );
+    });
+
+    it('works with Object', () => {
+      const [dramas] = lookup(
+        new Map([
+          ['first', 1],
+          ['second', 2],
+          ['third', 3],
+        ])
+      );
+
+      const dramasObject = create(dramas, Object);
+      expect(dramasObject).toEqual({ first: 1, second: 2, third: 3 });
     });
   });
 });

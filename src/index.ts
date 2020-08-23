@@ -18,11 +18,14 @@ export const universalSet: Contains<string> = () => true;
 export function lookup<K, V>(
   source: ReadonlyMap<K, V>
 ): [GetterWithEntries<K, V>];
-export function lookup<T>(source: Iterable<T>): [GetterWithEntries<T, boolean>];
+export function lookup<K extends string, V>(
+  source: FormData
+): [GetterWithEntries<string, string>];
+export function lookup<T, V extends boolean>(source: Iterable<T>): [GetterWithEntries<T, V>];
 
-export function lookup<T>(
-  source: Iterable<T>
-): [GetterWithEntries<T, boolean>] {
+export function lookup<T, V>(
+  source: Iterable<T> | FormData
+): [GetterWithEntries<T, V>] {
   if (source instanceof Map) {
     const map = source;
     const get = (input?: T | null) => {
@@ -32,6 +35,20 @@ export function lookup<T>(
         return undefined;
       } else {
         return map.get(input);
+      }
+    };
+    return [get];
+  }
+
+  if (source instanceof FormData) {
+    const formData = source;
+    const get = (input?: T | null) => {
+      if (input === undefined) {
+        return (formData as any).entries();
+      } else if (input === null) {
+        return undefined;
+      } else {
+        return formData.get(input as unknown as string);
       }
     };
     return [get];
@@ -57,7 +74,7 @@ export function lookup<T>(
             },
           };
         },
-      } as Iterable<[T, boolean]>;
+      } as Iterable<[T, V]>;
       // type A = Generator
       // return (function *entries() {
 
@@ -69,7 +86,7 @@ export function lookup<T>(
       return store.has(input);
     }
   };
-  return [get as GetterWithEntries<T, boolean>];
+  return [get as GetterWithEntries<T, V>];
 }
 
 export function complement<K>(
@@ -207,16 +224,22 @@ export function create<K, V>(
   input: GetterWithEntries<K, V>,
   collectionClass: MapConstructor
 ): Map<K, V>;
+export function create<K extends string | number | symbol, V>(
+  input: GetterWithEntries<K, V>,
+  collectionClass: ObjectConstructor
+): Record<K, V>;
 
 export function create<
   K,
   V,
-  Collection extends SetConstructor | ArrayConstructor | MapConstructor
+  Collection extends SetConstructor | ArrayConstructor | MapConstructor | ObjectConstructor
 >(input: GetterWithEntries<K, V>, collectionClass: Collection) {
   if (collectionClass === Set) {
     return new Set<K>(justKeys(input()));
   } else if (collectionClass === Array) {
     return Array.from(justKeys(input()));
+  } else if (collectionClass === Object) {
+    return Object.fromEntries(input());
   } else {
     return new Map<K, V>(input());
   }
