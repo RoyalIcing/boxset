@@ -55,7 +55,8 @@ describe('single()', () => {
 
 describe('lookup()', () => {
   it('works with an Array', () => {
-    const [get] = lookup(['first', 'second']);
+    const array = ['first', 'second'];
+    const [get] = lookup(array);
 
     expect(get('first')).toBe(true);
     expect(get('second')).toBe(true);
@@ -66,10 +67,22 @@ describe('lookup()', () => {
         ['second', true],
       ])
     );
+
+    array.push('third');
+
+    expect(get('third')).toBe(true);
+    expect(new Map(get())).toEqual(
+      new Map([
+        ['first', true],
+        ['second', true],
+        ['third', true],
+      ])
+    );
   });
 
   it('works with a Set', () => {
-    const [get] = lookup(new Set(['first', 'second']));
+    const set = new Set(['first', 'second']);
+    const [get] = lookup(set);
 
     expect(get('first')).toBe(true);
     expect(get('second')).toBe(true);
@@ -78,6 +91,17 @@ describe('lookup()', () => {
       new Map([
         ['first', true],
         ['second', true],
+      ])
+    );
+
+    set.add('third');
+
+    expect(get('third')).toBe(true);
+    expect(new Map(get())).toEqual(
+      new Map([
+        ['first', true],
+        ['second', true],
+        ['third', true],
       ])
     );
   });
@@ -102,12 +126,11 @@ describe('lookup()', () => {
   });
 
   it('works with a Map', () => {
-    const [get] = lookup(
-      new Map([
-        ['first', 1],
-        ['second', 2],
-      ])
-    );
+    const map = new Map([
+      ['first', 1],
+      ['second', 2],
+    ]);
+    const [get] = lookup(map);
 
     expect(get('first')).toBe(1);
     expect(get('second')).toBe(2);

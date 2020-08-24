@@ -41,6 +41,24 @@ export function single<K, V = boolean>(
   };
 }
 
+function mapIterable<I, O>(transform: (v: I) => O) {
+  return (input: Iterable<I>): Iterable<O> => {
+    return (function* () {
+      const iterator = input[Symbol.iterator]();
+
+      while (true) {
+        let item = iterator.next();
+
+        if (item.done) {
+          return;
+        }
+
+        yield transform(item.value);
+      }
+    })();
+  };
+}
+
 export function lookup<K, V>(
   source: ReadonlyMap<K, V>
 ): [GetterWithEntries<K, V>];
@@ -80,6 +98,33 @@ export function lookup<T, V>(
       }
     };
     return [get];
+  }
+
+  if (source instanceof Set) {
+    const get = (input?: T | null) => {
+      if (input === undefined) {
+        return mapIterable((v) => [v, true])(source);
+      } else if (input === null) {
+        return false;
+      } else {
+        return source.has(input);
+      }
+    };
+    return [get as GetterWithEntries<T, V>];
+  }
+
+  if (Array.isArray(source)) {
+    const array = source as Array<T>;
+    const get = (input?: T | null) => {
+      if (input === undefined) {
+        return mapIterable((v) => [v, true])(array);
+      } else if (input === null) {
+        return false;
+      } else {
+        return array.includes(input);
+      }
+    };
+    return [get as GetterWithEntries<T, V>];
   }
 
   const store = new Set(source);
@@ -224,21 +269,7 @@ export function intersection<K, V>(
 //   return difference(a, difference(a, b));
 // }
 
-export function justKeys<K, V>(input: Iterable<[K, V]>): Iterable<K> {
-  return (function* () {
-    const iterator = input[Symbol.iterator]();
-
-    while (true) {
-      let item = iterator.next();
-
-      if (item.done) {
-        return;
-      }
-
-      yield item.value[0];
-    }
-  })();
-}
+// export const justKeys = mapIterable(([key]) => key);
 
 export function create<K, V>(
   input: GetterWithEntries<K, V>,
@@ -267,9 +298,9 @@ export function create<
     | ObjectConstructor
 >(input: GetterWithEntries<K, V>, collectionClass: Collection) {
   if (collectionClass === Set) {
-    return new Set<K>(justKeys(input()));
+    return new Set<K>(mapIterable<[K, any], K>(([key]) => key)(input()));
   } else if (collectionClass === Array) {
-    return Array.from(justKeys(input()));
+    return Array.from(mapIterable<[K, any], K>(([key]) => key)(input()));
   } else if (collectionClass === Object) {
     return Object.fromEntries(input());
   } else {
