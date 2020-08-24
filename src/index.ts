@@ -135,7 +135,7 @@ export function union<K, V>(
   const get = (input?: K) => {
     if (input === undefined) {
       return new Map<K, V>(
-        (function*() {
+        (function* () {
           yield* Array.from(a());
           yield* Array.from(b());
         })()
@@ -154,7 +154,7 @@ export function difference<K, V>(
 ): GetterWithEntries<K, V> {
   const get = (input?: K) => {
     if (input === undefined) {
-      return (function*() {
+      return (function* () {
         const iterator = a()[Symbol.iterator]();
 
         while (true) {
@@ -188,7 +188,7 @@ export function intersection<K, V>(
 ): GetterWithEntries<K, V> {
   const get = (input?: K) => {
     if (input === undefined) {
-      return (function*() {
+      return (function* () {
         const iterator = a()[Symbol.iterator]();
 
         while (true) {
@@ -225,7 +225,7 @@ export function intersection<K, V>(
 // }
 
 export function justKeys<K, V>(input: Iterable<[K, V]>): Iterable<K> {
-  return (function*() {
+  return (function* () {
     const iterator = input[Symbol.iterator]();
 
     while (true) {
@@ -278,30 +278,30 @@ export function create<
 }
 
 export function into<K, V>(
-  input: GetterWithEntries<K, V>,
-  target: Map<K, V>
-): void;
+  target: Map<K, V>,
+  input: GetterWithEntries<K, V>
+): typeof target;
 export function into<K, V>(
-  input: GetterWithEntries<K, V>,
-  target: Set<K>
-): void;
+  target: Set<K>,
+  input: GetterWithEntries<K, any>
+): typeof target;
 export function into<K, V>(
-  input: GetterWithEntries<K, V>,
-  target: FormData
-): void;
+  target: FormData,
+  input: GetterWithEntries<K, V>
+): typeof target;
 export function into<K extends string | symbol | number, V>(
-  input: GetterWithEntries<K, V>,
-  target: Record<K, V>
-): void;
+  target: Record<K, V>,
+  input: GetterWithEntries<K, V>
+): typeof target;
 
 export function into<K, V>(
-  input: GetterWithEntries<K, V>,
   target:
     | FormData
     | Map<K, V>
     | Set<K>
-    | (K extends string | symbol | number ? Record<K, V> : never)
-) {
+    | (K extends string | symbol | number ? Record<K, V> : never),
+  input: GetterWithEntries<K, V>
+): typeof target {
   const iterator = input()[Symbol.iterator]();
 
   let setter: (key: K, value: V) => void;
@@ -326,7 +326,7 @@ export function into<K, V>(
     let item = iterator.next();
 
     if (item.done) {
-      return;
+      return target;
     }
 
     setter.apply(target, item.value);

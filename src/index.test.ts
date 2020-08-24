@@ -536,8 +536,7 @@ describe('into()', () => {
     it('works with Map', () => {
       const [dramas] = subject();
 
-      const dramasMap: Map<string, string> = new Map();
-      into(dramas, dramasMap);
+      const dramasMap = into(new Map(), dramas);
       expect(dramasMap).toEqual(
         new Map([
           ['first', 'ONE'],
@@ -550,24 +549,25 @@ describe('into()', () => {
     it('works with Set', () => {
       const [dramas] = subject();
 
-      const dramasSet: Set<string> = new Set();
-      into(dramas, dramasSet);
+      const dramasSet = into(new Set<string>(), dramas);
       expect(dramasSet).toEqual(new Set(['first', 'second', 'third']));
     });
 
     it('works with Object', () => {
       const [dramas] = subject();
 
-      const dramasObject = {};
-      into(dramas, dramasObject);
-      expect(dramasObject).toEqual({ first: 'ONE', second: 'TWO', third: 'THREE' });
+      const dramasObject = into({}, dramas);
+      expect(dramasObject).toEqual({
+        first: 'ONE',
+        second: 'TWO',
+        third: 'THREE',
+      });
     });
 
     it('works with FormData', () => {
       const [dramas] = subject();
 
-      const formData = new FormData();
-      into(dramas, formData);
+      const formData = into(new FormData(), dramas);
       expect(formData.get('first')).toEqual('ONE');
       expect(formData.get('second')).toEqual('TWO');
       expect(formData.get('third')).toEqual('THREE');
