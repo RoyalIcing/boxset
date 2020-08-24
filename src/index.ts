@@ -43,7 +43,7 @@ export function single<K, V = boolean>(
 
 function mapIterable<I, O>(transform: (v: I) => O) {
   return (input: Iterable<I>): Iterable<O> => {
-    return (function* () {
+    return (function*() {
       const iterator = input[Symbol.iterator]();
 
       while (true) {
@@ -103,7 +103,7 @@ export function lookup<T, V>(
   if (source instanceof Set) {
     const get = (input?: T | null) => {
       if (input === undefined) {
-        return mapIterable((v) => [v, true])(source);
+        return mapIterable(v => [v, true])(source);
       } else if (input === null) {
         return false;
       } else {
@@ -117,7 +117,7 @@ export function lookup<T, V>(
     const array = source as Array<T>;
     const get = (input?: T | null) => {
       if (input === undefined) {
-        return mapIterable((v) => [v, true])(array);
+        return mapIterable(v => [v, true])(array);
       } else if (input === null) {
         return false;
       } else {
@@ -180,7 +180,7 @@ export function union<K, V>(
   const get = (input?: K) => {
     if (input === undefined) {
       return new Map<K, V>(
-        (function* () {
+        (function*() {
           yield* Array.from(a());
           yield* Array.from(b());
         })()
@@ -199,7 +199,7 @@ export function difference<K, V>(
 ): GetterWithEntries<K, V> {
   const get = (input?: K) => {
     if (input === undefined) {
-      return (function* () {
+      return (function*() {
         const iterator = a()[Symbol.iterator]();
 
         while (true) {
@@ -233,7 +233,7 @@ export function intersection<K, V>(
 ): GetterWithEntries<K, V> {
   const get = (input?: K) => {
     if (input === undefined) {
-      return (function* () {
+      return (function*() {
         const iterator = a()[Symbol.iterator]();
 
         while (true) {
@@ -317,6 +317,10 @@ export function into<K, V>(
   input: GetterWithEntries<K, any>
 ): typeof target;
 export function into<K, V>(
+  target: Array<K>,
+  input: GetterWithEntries<K, any>
+): typeof target;
+export function into<K, V>(
   target: FormData,
   input: GetterWithEntries<K, V>
 ): typeof target;
@@ -330,6 +334,7 @@ export function into<K, V>(
     | FormData
     | Map<K, V>
     | Set<K>
+    | Array<K>
     | (K extends string | symbol | number ? Record<K, V> : never),
   input: GetterWithEntries<K, V>
 ): typeof target {
@@ -341,17 +346,14 @@ export function into<K, V>(
     setter = target.set as typeof setter;
   } else if ('add' in target && typeof target.add === 'function') {
     setter = target.add as typeof setter;
+  } else if ('push' in target && typeof target.push === 'function') {
+    setter = item => target.push(item);
   } else {
     const o: any = target;
     setter = (key, value) => {
       o[key] = value;
     };
   }
-
-  // const setter = ('set' in target ? target.set : target.add) as (
-  //   key: K,
-  //   value: V
-  // ) => void;
 
   while (true) {
     let item = iterator.next();
@@ -361,6 +363,5 @@ export function into<K, V>(
     }
 
     setter.apply(target, item.value);
-    // target.set(item.value[0], item.value[1]);
   }
 }

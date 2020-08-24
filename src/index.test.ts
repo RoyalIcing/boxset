@@ -159,6 +159,42 @@ describe('lookup()', () => {
       ])
     );
   });
+
+  it('works with a Generator Function', () => {
+    const f = function *() {
+      yield 'first';
+      yield 'second';
+    };
+    const [get] = lookup(f());
+
+    expect(get('first')).toBe(true);
+    expect(get('second')).toBe(true);
+    expect(get('missing' as any)).toBe(false);
+    expect(new Map(get())).toEqual(
+      new Map([
+        ['first', true],
+        ['second', true],
+      ])
+    );
+  });
+
+  // it('works with an object’s entries', () => {
+  //   const e = Object.entries({
+  //     'first': true,
+  //     'second': true
+  //   })
+  //   const [get] = lookup(e);
+
+  //   expect(get('first')).toBe(true);
+  //   expect(get('second')).toBe(true);
+  //   expect(get('missing' as any)).toBe(false);
+  //   expect(new Map(get())).toEqual(
+  //     new Map([
+  //       ['first', true],
+  //       ['second', true],
+  //     ])
+  //   );
+  // });
 });
 
 describe('complement()', () => {
@@ -623,5 +659,20 @@ describe('example of everything', () => {
     expect(create(showsStartingWithThe, Set)).toEqual(
       new Set(['The Americans', 'The Sopranos'])
     );
+  });
+
+  it('works with every type', () => {
+    const [shows] = lookup(['The Americans', 'The Sopranos', 'Breaking Bad']);
+
+    const showsSet = into(new Set<string>(), shows);
+    const showsMap = into(new Map(), lookup(showsSet)[0]);
+    // const showsObject = into({}, lookup(showsMap)[0]);
+    const showsArray = into([], lookup(showsMap)[0]);
+
+    expect(showsArray.sort()).toEqual([
+      'Breaking Bad',
+      'The Americans',
+      'The Sopranos',
+    ]);
   });
 });
