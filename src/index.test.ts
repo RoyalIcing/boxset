@@ -1,6 +1,7 @@
 import {
   emptySet,
   universalSet,
+  single,
   lookup,
   complement,
   union,
@@ -27,7 +28,23 @@ describe('universalSet', () => {
   });
 });
 
-describe('lookup', () => {
+describe('single()', () => {
+  it('works with just a string key', () => {
+    const get = single('some key');
+    expect(get('some key')).toBe(true);
+    expect(get('some other key')).toBe(false);
+    expect(new Map(get())).toEqual(new Map([['some key', true]]));
+  });
+
+  it('works with a key and value', () => {
+    const get = single('some key', 'some value');
+    expect(get('some key')).toBe('some value');
+    expect(get('some other key')).toBe(undefined);
+    expect(new Map(get())).toEqual(new Map([['some key', 'some value']]));
+  });
+});
+
+describe('lookup()', () => {
   it('works with an Array', () => {
     const [get] = lookup(['first', 'second']);
 

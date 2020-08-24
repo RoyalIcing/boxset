@@ -15,6 +15,29 @@ export interface Complemented {
 export const emptySet: Contains<string> = () => false;
 export const universalSet: Contains<string> = () => true;
 
+export function single<K, V = boolean>(key: K, value?: V): GetterWithEntries<K, V> {
+  const actualValue = value === undefined ? true : value;
+
+  return (input?: K | null) => {
+    if (input === undefined) {
+      // return [[key, actualValue]] as any;
+      return {
+        *[Symbol.iterator]() {
+          yield [key, actualValue]
+        }
+      } as any;
+    } else if (input === key) {
+      return actualValue;
+    } else {
+      if (value === undefined) {
+        return false;
+      } else {
+        return undefined;
+      }
+    }
+  };
+}
+
 export function lookup<K, V>(
   source: ReadonlyMap<K, V>
 ): [GetterWithEntries<K, V>];
