@@ -8,7 +8,9 @@ import {
   difference,
   intersection,
   create,
+  into,
 } from './index';
+import { lazy } from 'jest-zest';
 
 describe('emptySet', () => {
   it('always returns false', () => {
@@ -36,11 +38,18 @@ describe('single()', () => {
     expect(new Map(get())).toEqual(new Map([['some key', true]]));
   });
 
-  it('works with a key and value', () => {
+  it('works with a string key and string value', () => {
     const get = single('some key', 'some value');
     expect(get('some key')).toBe('some value');
     expect(get('some other key')).toBe(undefined);
     expect(new Map(get())).toEqual(new Map([['some key', 'some value']]));
+  });
+
+  it('works with a string key and number value', () => {
+    const get = single('some key', 123);
+    expect(get('some key')).toBe(123);
+    expect(get('some other key')).toBe(undefined);
+    expect(new Map(get())).toEqual(new Map([['some key', 123]]));
   });
 });
 
@@ -129,7 +138,7 @@ describe('lookup()', () => {
   });
 });
 
-describe('complement', () => {
+describe('complement()', () => {
   it('works with a Set', () => {
     const [get] = lookup(new Set(['first', 'second']));
     const inverseGet = complement(get);
@@ -156,7 +165,7 @@ describe('complement', () => {
   });
 });
 
-describe('union', () => {
+describe('union()', () => {
   it('works with an Array and Set', () => {
     const [a] = lookup(['first', 'second']);
     const [b] = lookup(new Set(['third', 'fourth']));
@@ -211,7 +220,7 @@ describe('union', () => {
   });
 });
 
-describe('difference', () => {
+describe('difference()', () => {
   it('works with an Array and Set', () => {
     const [a] = lookup(['first', 'second', 'third']);
     const [b] = lookup(new Set(['third', 'fourth']));
@@ -307,7 +316,7 @@ describe('difference', () => {
   });
 });
 
-describe('intersection', () => {
+describe('intersection()', () => {
   it('works with an Array and Set', () => {
     const [a] = lookup(['first', 'second', 'third']);
     const [b] = lookup(new Set(['third', 'fourth']));
@@ -388,7 +397,7 @@ describe('intersection', () => {
   });
 });
 
-describe('create', () => {
+describe('create()', () => {
   describe('Array source', () => {
     it('works with Set', () => {
       const [dramas] = lookup([
@@ -478,7 +487,7 @@ describe('create', () => {
       expect(dramasArray.sort()).toEqual(['first', 'second', 'third']);
     });
 
-    it('works with Object', () => {
+    it('works with Map', () => {
       const [dramas] = lookup(
         new Map([
           ['first', 1],
@@ -508,6 +517,60 @@ describe('create', () => {
 
       const dramasObject = create(dramas, Object);
       expect(dramasObject).toEqual({ first: 1, second: 2, third: 3 });
+    });
+  });
+});
+
+describe('into()', () => {
+  describe('Map source', () => {
+    const subject = lazy(() =>
+      lookup(
+        new Map([
+          ['first', 'ONE'],
+          ['second', 'TWO'],
+          ['third', 'THREE'],
+        ])
+      )
+    );
+
+    it('works with Map', () => {
+      const [dramas] = subject();
+
+      const dramasMap: Map<string, string> = new Map();
+      into(dramas, dramasMap);
+      expect(dramasMap).toEqual(
+        new Map([
+          ['first', 'ONE'],
+          ['second', 'TWO'],
+          ['third', 'THREE'],
+        ])
+      );
+    });
+
+    it('works with Set', () => {
+      const [dramas] = subject();
+
+      const dramasSet: Set<string> = new Set();
+      into(dramas, dramasSet);
+      expect(dramasSet).toEqual(new Set(['first', 'second', 'third']));
+    });
+
+    it('works with Object', () => {
+      const [dramas] = subject();
+
+      const dramasObject = {};
+      into(dramas, dramasObject);
+      expect(dramasObject).toEqual({ first: 'ONE', second: 'TWO', third: 'THREE' });
+    });
+
+    it('works with FormData', () => {
+      const [dramas] = subject();
+
+      const formData = new FormData();
+      into(dramas, formData);
+      expect(formData.get('first')).toEqual('ONE');
+      expect(formData.get('second')).toEqual('TWO');
+      expect(formData.get('third')).toEqual('THREE');
     });
   });
 });

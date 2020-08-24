@@ -15,7 +15,10 @@ export interface Complemented {
 export const emptySet: Contains<string> = () => false;
 export const universalSet: Contains<string> = () => true;
 
-export function single<K, V = boolean>(key: K, value?: V): GetterWithEntries<K, V> {
+export function single<K, V = boolean>(
+  key: K,
+  value?: V
+): GetterWithEntries<K, V> {
   const actualValue = value === undefined ? true : value;
 
   return (input?: K | null) => {
@@ -23,8 +26,8 @@ export function single<K, V = boolean>(key: K, value?: V): GetterWithEntries<K, 
       // return [[key, actualValue]] as any;
       return {
         *[Symbol.iterator]() {
-          yield [key, actualValue]
-        }
+          yield [key, actualValue];
+        },
       } as any;
     } else if (input === key) {
       return actualValue;
@@ -44,7 +47,9 @@ export function lookup<K, V>(
 export function lookup<K extends string, V>(
   source: FormData
 ): [GetterWithEntries<string, string>];
-export function lookup<T, V extends boolean>(source: Iterable<T>): [GetterWithEntries<T, V>];
+export function lookup<T, V extends boolean>(
+  source: Iterable<T>
+): [GetterWithEntries<T, V>];
 
 export function lookup<T, V>(
   source: Iterable<T> | FormData
@@ -71,7 +76,7 @@ export function lookup<T, V>(
       } else if (input === null) {
         return undefined;
       } else {
-        return formData.get(input as unknown as string);
+        return formData.get((input as unknown) as string);
       }
     };
     return [get];
@@ -255,7 +260,11 @@ export function create<K extends string | number | symbol, V>(
 export function create<
   K,
   V,
-  Collection extends SetConstructor | ArrayConstructor | MapConstructor | ObjectConstructor
+  Collection extends
+    | SetConstructor
+    | ArrayConstructor
+    | MapConstructor
+    | ObjectConstructor
 >(input: GetterWithEntries<K, V>, collectionClass: Collection) {
   if (collectionClass === Set) {
     return new Set<K>(justKeys(input()));
@@ -265,5 +274,62 @@ export function create<
     return Object.fromEntries(input());
   } else {
     return new Map<K, V>(input());
+  }
+}
+
+export function into<K, V>(
+  input: GetterWithEntries<K, V>,
+  target: Map<K, V>
+): void;
+export function into<K, V>(
+  input: GetterWithEntries<K, V>,
+  target: Set<K>
+): void;
+export function into<K, V>(
+  input: GetterWithEntries<K, V>,
+  target: FormData
+): void;
+export function into<K extends string | symbol | number, V>(
+  input: GetterWithEntries<K, V>,
+  target: Record<K, V>
+): void;
+
+export function into<K, V>(
+  input: GetterWithEntries<K, V>,
+  target:
+    | FormData
+    | Map<K, V>
+    | Set<K>
+    | (K extends string | symbol | number ? Record<K, V> : never)
+) {
+  const iterator = input()[Symbol.iterator]();
+
+  let setter: (key: K, value: V) => void;
+
+  if ('set' in target && typeof target.set === 'function') {
+    setter = target.set as typeof setter;
+  } else if ('add' in target && typeof target.add === 'function') {
+    setter = target.add as typeof setter;
+  } else {
+    const o: any = target;
+    setter = (key, value) => {
+      o[key] = value;
+    };
+  }
+
+  // const setter = ('set' in target ? target.set : target.add) as (
+  //   key: K,
+  //   value: V
+  // ) => void;
+
+  while (true) {
+    let item = iterator.next();
+
+    if (item.done) {
+      return;
+    }
+
+    setter.apply(target, item.value);
+    // target.set(item.value[0], item.value[1]);
   }
 }
