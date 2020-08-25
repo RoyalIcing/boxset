@@ -12,8 +12,8 @@ export interface Complemented {
   isComplement: true;
 }
 
-export const emptySet: Contains<string> = () => false;
-export const universalSet: Contains<string> = () => true;
+export const emptySet: Contains<string | symbol | number> = () => false;
+export const universalSet: Contains<string | symbol | number> = () => true;
 
 export function single<K, V = boolean>(
   key: K,

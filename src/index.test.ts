@@ -18,6 +18,9 @@ describe('emptySet', () => {
     expect(emptySet('at')).toBe(false);
     expect(emptySet('all')).toBe(false);
     expect(emptySet('')).toBe(false);
+    expect(emptySet(5)).toBe(false);
+    expect(emptySet(Math.PI)).toBe(false);
+    expect(emptySet(Symbol.iterator)).toBe(false);
   });
 });
 
@@ -27,6 +30,9 @@ describe('universalSet', () => {
     expect(universalSet('at')).toBe(true);
     expect(universalSet('all')).toBe(true);
     expect(universalSet('')).toBe(true);
+    expect(universalSet(5)).toBe(true);
+    expect(universalSet(Math.PI)).toBe(true);
+    expect(universalSet(Symbol.iterator)).toBe(true);
   });
 });
 
@@ -161,7 +167,7 @@ describe('lookup()', () => {
   });
 
   it('works with a Generator Function', () => {
-    const f = function *() {
+    const f = function*() {
       yield 'first';
       yield 'second';
     };
