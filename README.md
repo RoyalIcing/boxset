@@ -8,8 +8,6 @@ You can perform set operations such as `union`, `difference`, `complement`, `int
 
 ```ts
 import {
-  emptySet,
-  universalSet,
   source,
   complement,
   union,
