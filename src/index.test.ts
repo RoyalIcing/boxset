@@ -3,7 +3,6 @@ import {
   universalSet,
   single,
   source,
-  lookup,
   complement,
   union,
   difference,
@@ -189,7 +188,7 @@ describe('source()', () => {
   //     'first': true,
   //     'second': true
   //   })
-  //   const [get] = lookup(e);
+  //   const get = source(e);
 
   //   expect(get('first')).toBe(true);
   //   expect(get('second')).toBe(true);
@@ -205,7 +204,7 @@ describe('source()', () => {
 
 describe('complement()', () => {
   it('works with a Set', () => {
-    const [get] = lookup(new Set(['first', 'second']));
+    const get = source(new Set(['first', 'second']));
     const inverseGet = complement(get);
 
     expect(inverseGet('first')).toBe(false);
@@ -361,7 +360,7 @@ describe('difference()', () => {
   });
 
   it('works with a Set and a function', () => {
-    const [shows] = lookup([
+    const shows = source([
       'The Americans',
       'Breaking Bad',
       'Boardwalk Empire',
@@ -655,7 +654,7 @@ describe('example of everything', () => {
 
     const showsSet = into(new Set<string>(), shows);
     const showsMap = into(new Map<string, boolean>(), source(showsSet));
-    // const showsObject = into({}, lookup(showsMap)[0]);
+    // const showsObject = into({}, source(showsMap));
     const showsArray = into([], source(showsMap));
 
     expect(showsArray.sort()).toEqual([
