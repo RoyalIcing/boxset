@@ -59,9 +59,7 @@ function mapIterable<I, O>(transform: (v: I) => O) {
   };
 }
 
-export function source<K, V>(
-  source: ReadonlyMap<K, V>
-): SourceIterable<K, V>;
+export function source<K, V>(source: ReadonlyMap<K, V>): SourceIterable<K, V>;
 export function source<K extends string, V>(
   source: FormData
 ): SourceIterable<string, string>;
@@ -162,9 +160,7 @@ export function source<T, V>(
   return get as SourceIterable<T, V>;
 }
 
-export function lookup<K, V>(
-  source: ReadonlyMap<K, V>
-): [SourceIterable<K, V>];
+export function lookup<K, V>(source: ReadonlyMap<K, V>): [SourceIterable<K, V>];
 export function lookup<K extends string, V>(
   source: FormData
 ): [SourceIterable<string, string>];
