@@ -1,8 +1,8 @@
-export interface Getter<I, O> {
+export interface Source<I, O> {
   (input: I): O;
 }
-export type Contains<I> = Getter<I, boolean>;
-export interface GetterWithEntries<I, O> {
+export type Contains<I> = Source<I, boolean>;
+export interface SourceIterable<I, O> {
   (input: I): O;
   (input: null): undefined | null | false;
   (): Iterable<[I, O]>;
@@ -18,7 +18,7 @@ export const universalSet: Contains<string | symbol | number> = () => true;
 export function single<K, V = boolean>(
   key: K,
   value?: V
-): GetterWithEntries<K, V> {
+): SourceIterable<K, V> {
   const actualValue = value === undefined ? true : value;
 
   return (input?: K | null) => {
@@ -61,17 +61,17 @@ function mapIterable<I, O>(transform: (v: I) => O) {
 
 export function source<K, V>(
   source: ReadonlyMap<K, V>
-): GetterWithEntries<K, V>;
+): SourceIterable<K, V>;
 export function source<K extends string, V>(
   source: FormData
-): GetterWithEntries<string, string>;
+): SourceIterable<string, string>;
 export function source<T, V extends boolean>(
   source: Iterable<T>
-): GetterWithEntries<T, V>;
+): SourceIterable<T, V>;
 
 export function source<T, V>(
   source: Iterable<T> | FormData
-): GetterWithEntries<T, V> {
+): SourceIterable<T, V> {
   if (source instanceof Map) {
     const map = source;
     const get = (input?: T | null) => {
@@ -110,7 +110,7 @@ export function source<T, V>(
         return source.has(input);
       }
     };
-    return get as GetterWithEntries<T, V>;
+    return get as SourceIterable<T, V>;
   }
 
   if (Array.isArray(source)) {
@@ -124,7 +124,7 @@ export function source<T, V>(
         return array.includes(input);
       }
     };
-    return get as GetterWithEntries<T, V>;
+    return get as SourceIterable<T, V>;
   }
 
   const store = new Set(source);
@@ -159,22 +159,22 @@ export function source<T, V>(
       return store.has(input);
     }
   };
-  return get as GetterWithEntries<T, V>;
+  return get as SourceIterable<T, V>;
 }
 
 export function lookup<K, V>(
   source: ReadonlyMap<K, V>
-): [GetterWithEntries<K, V>];
+): [SourceIterable<K, V>];
 export function lookup<K extends string, V>(
   source: FormData
-): [GetterWithEntries<string, string>];
+): [SourceIterable<string, string>];
 export function lookup<T, V extends boolean>(
   source: Iterable<T>
-): [GetterWithEntries<T, V>];
+): [SourceIterable<T, V>];
 
 export function lookup<T, V>(
   source: Iterable<T> | FormData
-): [GetterWithEntries<T, V>] {
+): [SourceIterable<T, V>] {
   if (source instanceof Map) {
     const map = source;
     const get = (input?: T | null) => {
@@ -213,7 +213,7 @@ export function lookup<T, V>(
         return source.has(input);
       }
     };
-    return [get as GetterWithEntries<T, V>];
+    return [get as SourceIterable<T, V>];
   }
 
   if (Array.isArray(source)) {
@@ -227,7 +227,7 @@ export function lookup<T, V>(
         return array.includes(input);
       }
     };
-    return [get as GetterWithEntries<T, V>];
+    return [get as SourceIterable<T, V>];
   }
 
   const store = new Set(source);
@@ -262,11 +262,11 @@ export function lookup<T, V>(
       return store.has(input);
     }
   };
-  return [get as GetterWithEntries<T, V>];
+  return [get as SourceIterable<T, V>];
 }
 
 export function complement<K>(
-  source: Getter<K, any>
+  source: Source<K, any>
 ): Contains<K> & Complemented {
   return Object.assign(
     (input: K) => {
@@ -277,9 +277,9 @@ export function complement<K>(
 }
 
 export function union<K, V>(
-  a: GetterWithEntries<K, V>,
-  b: GetterWithEntries<K, V>
-): GetterWithEntries<K, V> {
+  a: SourceIterable<K, V>,
+  b: SourceIterable<K, V>
+): SourceIterable<K, V> {
   const get = (input?: K) => {
     if (input === undefined) {
       return new Map<K, V>(
@@ -293,13 +293,13 @@ export function union<K, V>(
     }
   };
 
-  return get as GetterWithEntries<K, V>;
+  return get as SourceIterable<K, V>;
 }
 
 export function difference<K, V>(
-  a: GetterWithEntries<K, V>,
-  b: Getter<K, any>
-): GetterWithEntries<K, V> {
+  a: SourceIterable<K, V>,
+  b: Source<K, any>
+): SourceIterable<K, V> {
   const get = (input?: K) => {
     if (input === undefined) {
       return (function*() {
@@ -327,13 +327,13 @@ export function difference<K, V>(
     }
   };
 
-  return get as GetterWithEntries<K, V>;
+  return get as SourceIterable<K, V>;
 }
 
 export function intersection<K, V>(
-  a: GetterWithEntries<K, V>,
-  b: Getter<K, any>
-): GetterWithEntries<K, V> {
+  a: SourceIterable<K, V>,
+  b: Source<K, any>
+): SourceIterable<K, V> {
   const get = (input?: K) => {
     if (input === undefined) {
       return (function*() {
@@ -362,7 +362,7 @@ export function intersection<K, V>(
     }
   };
 
-  return get as GetterWithEntries<K, V>;
+  return get as SourceIterable<K, V>;
 }
 
 // export function intersection<K, V>(
@@ -375,19 +375,19 @@ export function intersection<K, V>(
 // export const justKeys = mapIterable(([key]) => key);
 
 export function create<K, V>(
-  input: GetterWithEntries<K, V>,
+  input: SourceIterable<K, V>,
   collectionClass: ArrayConstructor
 ): Array<K>;
 export function create<K, V>(
-  input: GetterWithEntries<K, V>,
+  input: SourceIterable<K, V>,
   collectionClass: SetConstructor
 ): Set<K>;
 export function create<K, V>(
-  input: GetterWithEntries<K, V>,
+  input: SourceIterable<K, V>,
   collectionClass: MapConstructor
 ): Map<K, V>;
 export function create<K extends string | number | symbol, V>(
-  input: GetterWithEntries<K, V>,
+  input: SourceIterable<K, V>,
   collectionClass: ObjectConstructor
 ): Record<K, V>;
 
@@ -399,7 +399,7 @@ export function create<
     | ArrayConstructor
     | MapConstructor
     | ObjectConstructor
->(input: GetterWithEntries<K, V>, collectionClass: Collection) {
+>(input: SourceIterable<K, V>, collectionClass: Collection) {
   if (collectionClass === Set) {
     return new Set<K>(mapIterable<[K, any], K>(([key]) => key)(input()));
   } else if (collectionClass === Array) {
@@ -413,23 +413,23 @@ export function create<
 
 export function into<K, V>(
   target: Map<K, V>,
-  input: GetterWithEntries<K, V>
+  input: SourceIterable<K, V>
 ): typeof target;
 export function into<K, V>(
   target: Set<K>,
-  input: GetterWithEntries<K, any>
+  input: SourceIterable<K, any>
 ): typeof target;
 export function into<K, V>(
   target: Array<K>,
-  input: GetterWithEntries<K, any>
+  input: SourceIterable<K, any>
 ): typeof target;
 export function into<K, V>(
   target: FormData,
-  input: GetterWithEntries<K, V>
+  input: SourceIterable<K, V>
 ): typeof target;
 export function into<K extends string | symbol | number, V>(
   target: Record<K, V>,
-  input: GetterWithEntries<K, V>
+  input: SourceIterable<K, V>
 ): typeof target;
 
 export function into<K, V>(
@@ -439,7 +439,7 @@ export function into<K, V>(
     | Set<K>
     | Array<K>
     | (K extends string | symbol | number ? Record<K, V> : never),
-  input: GetterWithEntries<K, V>
+  input: SourceIterable<K, V>
 ): typeof target {
   const iterator = input()[Symbol.iterator]();
 
