@@ -59,6 +59,109 @@ function mapIterable<I, O>(transform: (v: I) => O) {
   };
 }
 
+export function source<K, V>(
+  source: ReadonlyMap<K, V>
+): GetterWithEntries<K, V>;
+export function source<K extends string, V>(
+  source: FormData
+): GetterWithEntries<string, string>;
+export function source<T, V extends boolean>(
+  source: Iterable<T>
+): GetterWithEntries<T, V>;
+
+export function source<T, V>(
+  source: Iterable<T> | FormData
+): GetterWithEntries<T, V> {
+  if (source instanceof Map) {
+    const map = source;
+    const get = (input?: T | null) => {
+      if (input === undefined) {
+        return map.entries();
+      } else if (input === null) {
+        return undefined;
+      } else {
+        return map.get(input);
+      }
+    };
+    return get;
+  }
+
+  if (source instanceof FormData) {
+    const formData = source;
+    const get = (input?: T | null) => {
+      if (input === undefined) {
+        return (formData as any).entries();
+      } else if (input === null) {
+        return undefined;
+      } else {
+        return formData.get((input as unknown) as string);
+      }
+    };
+    return get;
+  }
+
+  if (source instanceof Set) {
+    const get = (input?: T | null) => {
+      if (input === undefined) {
+        return mapIterable(v => [v, true])(source);
+      } else if (input === null) {
+        return false;
+      } else {
+        return source.has(input);
+      }
+    };
+    return get as GetterWithEntries<T, V>;
+  }
+
+  if (Array.isArray(source)) {
+    const array = source as Array<T>;
+    const get = (input?: T | null) => {
+      if (input === undefined) {
+        return mapIterable(v => [v, true])(array);
+      } else if (input === null) {
+        return false;
+      } else {
+        return array.includes(input);
+      }
+    };
+    return get as GetterWithEntries<T, V>;
+  }
+
+  const store = new Set(source);
+  const get = (input?: T) => {
+    if (input === undefined) {
+      return {
+        [Symbol.iterator]() {
+          const iterator = store.keys()[Symbol.iterator]();
+          return {
+            next() {
+              const keyResult = iterator.next();
+              if (keyResult.done) {
+                return keyResult;
+              }
+
+              return {
+                value: [keyResult.value, true],
+                done: false,
+              };
+            },
+          };
+        },
+      } as Iterable<[T, V]>;
+      // type A = Generator
+      // return (function *entries() {
+
+      // })()
+      // return store.entries();
+    } else if (input === null) {
+      return false;
+    } else {
+      return store.has(input);
+    }
+  };
+  return get as GetterWithEntries<T, V>;
+}
+
 export function lookup<K, V>(
   source: ReadonlyMap<K, V>
 ): [GetterWithEntries<K, V>];

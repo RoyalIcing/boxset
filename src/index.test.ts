@@ -2,6 +2,7 @@ import {
   emptySet,
   universalSet,
   single,
+  source,
   lookup,
   complement,
   union,
@@ -10,7 +11,6 @@ import {
   create,
   into,
 } from './index';
-import { lazy } from 'jest-zest';
 
 describe('emptySet', () => {
   it('always returns false', () => {
@@ -59,10 +59,10 @@ describe('single()', () => {
   });
 });
 
-describe('lookup()', () => {
+describe('source()', () => {
   it('works with an Array', () => {
     const array = ['first', 'second'];
-    const [get] = lookup(array);
+    const get = source(array);
 
     expect(get('first')).toBe(true);
     expect(get('second')).toBe(true);
@@ -88,7 +88,7 @@ describe('lookup()', () => {
 
   it('works with a Set', () => {
     const set = new Set(['first', 'second']);
-    const [get] = lookup(set);
+    const get = source(set);
 
     expect(get('first')).toBe(true);
     expect(get('second')).toBe(true);
@@ -113,7 +113,7 @@ describe('lookup()', () => {
   });
 
   it('works with a Map’s keys', () => {
-    const [get] = lookup(
+    const get = source(
       new Map([
         ['first', 1],
         ['second', 2],
@@ -136,7 +136,7 @@ describe('lookup()', () => {
       ['first', 1],
       ['second', 2],
     ]);
-    const [get] = lookup(map);
+    const get = source(map);
 
     expect(get('first')).toBe(1);
     expect(get('second')).toBe(2);
@@ -153,7 +153,7 @@ describe('lookup()', () => {
     const formData = new FormData();
     formData.set('first', 'ONE');
     formData.set('second', 'TWO');
-    const [get] = lookup(formData);
+    const get = source(formData);
 
     expect(get('first')).toBe('ONE');
     expect(get('second')).toBe('TWO');
@@ -171,7 +171,7 @@ describe('lookup()', () => {
       yield 'first';
       yield 'second';
     };
-    const [get] = lookup(f());
+    const get = source(f());
 
     expect(get('first')).toBe(true);
     expect(get('second')).toBe(true);
@@ -232,8 +232,8 @@ describe('complement()', () => {
 
 describe('union()', () => {
   it('works with an Array and Set', () => {
-    const [a] = lookup(['first', 'second']);
-    const [b] = lookup(new Set(['third', 'fourth']));
+    const a = source(['first', 'second']);
+    const b = source(new Set(['third', 'fourth']));
     const get = union(a, b);
 
     expect(get('first')).toBe(true);
@@ -253,14 +253,14 @@ describe('union()', () => {
   });
 
   it('works with two Maps', () => {
-    const [a] = lookup(
+    const a = source(
       new Map([
         ['first', 1],
         ['second', 2],
         ['third', -3],
       ])
     );
-    const [b] = lookup(
+    const b = source(
       new Map([
         ['third', 3],
         ['fourth', 4],
@@ -287,8 +287,8 @@ describe('union()', () => {
 
 describe('difference()', () => {
   it('works with an Array and Set', () => {
-    const [a] = lookup(['first', 'second', 'third']);
-    const [b] = lookup(new Set(['third', 'fourth']));
+    const a = source(['first', 'second', 'third']);
+    const b = source(new Set(['third', 'fourth']));
     const get = difference(a, b);
 
     expect(get('first')).toBe(true);
@@ -306,14 +306,14 @@ describe('difference()', () => {
   });
 
   it('works with two Maps', () => {
-    const [a] = lookup(
+    const a = source(
       new Map([
         ['first', 1],
         ['second', 2],
         ['third', -3],
       ])
     );
-    const [b] = lookup(
+    const b = source(
       new Map([
         ['third', 3],
         ['fourth', 4],
@@ -336,14 +336,14 @@ describe('difference()', () => {
   });
 
   it('works with a Map and an array', () => {
-    const [a] = lookup(
+    const a = source(
       new Map([
         ['first', 1],
         ['second', 2],
         ['third', -3],
       ])
     );
-    const [b] = lookup(['third', 'fourth']);
+    const b = source(['third', 'fourth']);
     const get = difference(a, b);
 
     expect(get('first')).toBe(1);
@@ -383,8 +383,8 @@ describe('difference()', () => {
 
 describe('intersection()', () => {
   it('works with an Array and Set', () => {
-    const [a] = lookup(['first', 'second', 'third']);
-    const [b] = lookup(new Set(['third', 'fourth']));
+    const a = source(['first', 'second', 'third']);
+    const b = source(new Set(['third', 'fourth']));
     const get = intersection(a, b);
 
     expect(get('first')).toBe(false);
@@ -397,14 +397,14 @@ describe('intersection()', () => {
   });
 
   it('works with two Maps', () => {
-    const [a] = lookup(
+    const a = source(
       new Map([
         ['first', 1],
         ['second', 2],
         ['third', -3],
       ])
     );
-    const [b] = lookup(
+    const b = source(
       new Map([
         ['third', 3],
         ['fourth', 4],
@@ -422,14 +422,14 @@ describe('intersection()', () => {
   });
 
   it('works with a Map and an array', () => {
-    const [a] = lookup(
+    const a = source(
       new Map([
         ['first', 1],
         ['second', 2],
         ['third', -3],
       ])
     );
-    const [b] = lookup(['third', 'fourth']);
+    const b = source(['third', 'fourth']);
     const get = intersection(a, b);
 
     expect(get('first')).toBe(undefined);
@@ -442,7 +442,7 @@ describe('intersection()', () => {
   });
 
   it('works with a Set and a function', () => {
-    const [shows] = lookup([
+    const shows = source([
       'The Americans',
       'Breaking Bad',
       'Boardwalk Empire',
@@ -465,11 +465,7 @@ describe('intersection()', () => {
 describe('create()', () => {
   describe('Array source', () => {
     it('works with Set', () => {
-      const [dramas] = lookup([
-        'The Americans',
-        'The Sopranos',
-        'Breaking Bad',
-      ]);
+      const dramas = source(['The Americans', 'The Sopranos', 'Breaking Bad']);
 
       const dramasSet = create(dramas, Set);
       expect(dramasSet).toEqual(
@@ -478,11 +474,7 @@ describe('create()', () => {
     });
 
     it('works with Array', () => {
-      const [dramas] = lookup([
-        'The Americans',
-        'The Sopranos',
-        'Breaking Bad',
-      ]);
+      const dramas = source(['The Americans', 'The Sopranos', 'Breaking Bad']);
 
       const dramasArray = create(dramas, Array);
       expect(dramasArray.sort()).toEqual([
@@ -493,11 +485,7 @@ describe('create()', () => {
     });
 
     it('works with Object', () => {
-      const [dramas] = lookup([
-        'The Americans',
-        'The Sopranos',
-        'Breaking Bad',
-      ]);
+      const dramas = source(['The Americans', 'The Sopranos', 'Breaking Bad']);
 
       const dramasMap = create(dramas, Map);
       expect(dramasMap).toEqual(
@@ -510,11 +498,7 @@ describe('create()', () => {
     });
 
     it('works with Object', () => {
-      const [dramas] = lookup([
-        'The Americans',
-        'The Sopranos',
-        'Breaking Bad',
-      ]);
+      const dramas = source(['The Americans', 'The Sopranos', 'Breaking Bad']);
 
       const dramasObject = create(dramas, Object);
       expect(dramasObject).toEqual({
@@ -527,7 +511,7 @@ describe('create()', () => {
 
   describe('Map source', () => {
     it('works with Set', () => {
-      const [dramas] = lookup(
+      const dramas = source(
         new Map([
           ['first', 1],
           ['second', 2],
@@ -540,7 +524,7 @@ describe('create()', () => {
     });
 
     it('works with Array', () => {
-      const [dramas] = lookup(
+      const dramas = source(
         new Map([
           ['first', 1],
           ['second', 2],
@@ -553,7 +537,7 @@ describe('create()', () => {
     });
 
     it('works with Map', () => {
-      const [dramas] = lookup(
+      const dramas = source(
         new Map([
           ['first', 1],
           ['second', 2],
@@ -572,7 +556,7 @@ describe('create()', () => {
     });
 
     it('works with Object', () => {
-      const [dramas] = lookup(
+      const dramas = source(
         new Map([
           ['first', 1],
           ['second', 2],
@@ -588,18 +572,17 @@ describe('create()', () => {
 
 describe('into()', () => {
   describe('Map source', () => {
-    const subject = lazy(() =>
-      lookup(
+    const subject = () =>
+      source(
         new Map([
           ['first', 'ONE'],
           ['second', 'TWO'],
           ['third', 'THREE'],
         ])
-      )
-    );
+      );
 
     it('works with Map', () => {
-      const [dramas] = subject();
+      const dramas = subject();
 
       const dramasMap = into(new Map(), dramas);
       expect(dramasMap).toEqual(
@@ -612,14 +595,14 @@ describe('into()', () => {
     });
 
     it('works with Set', () => {
-      const [dramas] = subject();
+      const dramas = subject();
 
       const dramasSet = into(new Set<string>(), dramas);
       expect(dramasSet).toEqual(new Set(['first', 'second', 'third']));
     });
 
     it('works with Object', () => {
-      const [dramas] = subject();
+      const dramas = subject();
 
       const dramasObject = into({}, dramas);
       expect(dramasObject).toEqual({
@@ -630,7 +613,7 @@ describe('into()', () => {
     });
 
     it('works with FormData', () => {
-      const [dramas] = subject();
+      const dramas = subject();
 
       const formData = into(new FormData(), dramas);
       expect(formData.get('first')).toEqual('ONE');
@@ -642,8 +625,8 @@ describe('into()', () => {
 
 describe('example of everything', () => {
   it('works', () => {
-    const [dramas] = lookup(['The Americans', 'The Sopranos', 'Breaking Bad']);
-    const [comedies] = lookup(['Flight of the Conchords']);
+    const dramas = source(['The Americans', 'The Sopranos', 'Breaking Bad']);
+    const comedies = source(['Flight of the Conchords']);
 
     const shows = union(dramas, comedies);
 
@@ -668,12 +651,12 @@ describe('example of everything', () => {
   });
 
   it('works with every type', () => {
-    const [shows] = lookup(['The Americans', 'The Sopranos', 'Breaking Bad']);
+    const shows = source(['The Americans', 'The Sopranos', 'Breaking Bad']);
 
     const showsSet = into(new Set<string>(), shows);
-    const showsMap = into(new Map(), lookup(showsSet)[0]);
+    const showsMap = into(new Map<string, boolean>(), source(showsSet));
     // const showsObject = into({}, lookup(showsMap)[0]);
-    const showsArray = into([], lookup(showsMap)[0]);
+    const showsArray = into([], source(showsMap));
 
     expect(showsArray.sort()).toEqual([
       'Breaking Bad',
