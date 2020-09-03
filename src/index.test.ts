@@ -1,6 +1,7 @@
 import {
   emptySet,
   universalSet,
+  always,
   single,
   source,
   complement,
@@ -32,6 +33,19 @@ describe('universalSet', () => {
     expect(universalSet(5)).toBe(true);
     expect(universalSet(Math.PI)).toBe(true);
     expect(universalSet(Symbol.iterator)).toBe(true);
+  });
+});
+
+describe('always()', () => {
+  it('always returns the value for any input', () => {
+    const get = always(42);
+    expect(get('anything')).toBe(42);
+    expect(get('at')).toBe(42);
+    expect(get('all')).toBe(42);
+    expect(get('')).toBe(42);
+    expect(get(5)).toBe(42);
+    expect(get(Math.PI)).toBe(42);
+    expect(get(Symbol.iterator)).toBe(42);
   });
 });
 

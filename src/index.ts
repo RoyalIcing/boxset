@@ -15,6 +15,10 @@ export interface Complemented {
 export const emptySet: Contains<string | symbol | number> = () => false;
 export const universalSet: Contains<string | symbol | number> = () => true;
 
+export function always<V>(value: V): Source<any, V> {
+  return () => value;
+}
+
 export function single<K, V = boolean>(
   key: K,
   value?: V
