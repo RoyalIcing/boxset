@@ -54,21 +54,21 @@ describe('single()', () => {
     const get = single('some key');
     expect(get('some key')).toBe(true);
     expect(get('some other key')).toBe(false);
-    expect(new Map(get())).toEqual(new Map([['some key', true]]));
+    expect(new Map(get)).toEqual(new Map([['some key', true]]));
   });
 
   it('works with a string key and string value', () => {
     const get = single('some key', 'some value');
     expect(get('some key')).toBe('some value');
     expect(get('some other key')).toBe(undefined);
-    expect(new Map(get())).toEqual(new Map([['some key', 'some value']]));
+    expect(new Map(get)).toEqual(new Map([['some key', 'some value']]));
   });
 
   it('works with a string key and number value', () => {
     const get = single('some key', 123);
     expect(get('some key')).toBe(123);
     expect(get('some other key')).toBe(undefined);
-    expect(new Map(get())).toEqual(new Map([['some key', 123]]));
+    expect(new Map(get)).toEqual(new Map([['some key', 123]]));
   });
 });
 
@@ -80,7 +80,7 @@ describe('source()', () => {
     expect(get('first')).toBe(true);
     expect(get('second')).toBe(true);
     expect(get('missing')).toBe(false);
-    expect(new Map(get())).toEqual(
+    expect(new Map(get)).toEqual(
       new Map([
         ['first', true],
         ['second', true],
@@ -90,7 +90,7 @@ describe('source()', () => {
     array.push('third');
 
     expect(get('third')).toBe(true);
-    expect(new Map(get())).toEqual(
+    expect(new Map(get)).toEqual(
       new Map([
         ['first', true],
         ['second', true],
@@ -106,7 +106,7 @@ describe('source()', () => {
     expect(get('first')).toBe(true);
     expect(get('second')).toBe(true);
     expect(get('missing')).toBe(false);
-    expect(new Map(get())).toEqual(
+    expect(new Map(get)).toEqual(
       new Map([
         ['first', true],
         ['second', true],
@@ -116,30 +116,11 @@ describe('source()', () => {
     set.add('third');
 
     expect(get('third')).toBe(true);
-    expect(new Map(get())).toEqual(
+    expect(new Map(get)).toEqual(
       new Map([
         ['first', true],
         ['second', true],
         ['third', true],
-      ])
-    );
-  });
-
-  it('works with a Map’s keys', () => {
-    const get = source(
-      new Map([
-        ['first', 1],
-        ['second', 2],
-      ]).keys()
-    );
-
-    expect(get('first')).toBe(true);
-    expect(get('second')).toBe(true);
-    expect(get('missing')).toBe(false);
-    expect(new Map(get())).toEqual(
-      new Map([
-        ['first', true],
-        ['second', true],
       ])
     );
   });
@@ -154,7 +135,7 @@ describe('source()', () => {
     expect(get('first')).toBe(1);
     expect(get('second')).toBe(2);
     expect(get('missing')).toBe(undefined);
-    expect(new Map(get())).toEqual(
+    expect(new Map(get)).toEqual(
       new Map([
         ['first', 1],
         ['second', 2],
@@ -171,7 +152,7 @@ describe('source()', () => {
     expect(get('first')).toBe('ONE');
     expect(get('second')).toBe('TWO');
     expect(get('missing')).toBe(null);
-    expect(new Map(get())).toEqual(
+    expect(new Map(get)).toEqual(
       new Map([
         ['first', 'ONE'],
         ['second', 'TWO'],
@@ -179,22 +160,14 @@ describe('source()', () => {
     );
   });
 
-  it('works with a Generator Function', () => {
-    const f = function*() {
-      yield 'first';
-      yield 'second';
-    };
-    const get = source(f());
-
-    expect(get('first')).toBe(true);
-    expect(get('second')).toBe(true);
-    expect(get('missing' as any)).toBe(false);
-    expect(new Map(get())).toEqual(
-      new Map([
-        ['first', true],
-        ['second', true],
-      ])
-    );
+  it('errors with a generator function', () => {
+    expect(() =>
+      source(
+        (function*() {
+          yield 'abc';
+        })() as any
+      )
+    ).toThrowError('Unknown source object');
   });
 
   // it('works with an object’s entries', () => {

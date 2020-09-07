@@ -2,7 +2,7 @@ export interface Source<I, O> {
   (input: I): O;
 }
 export type Contains<I> = Source<I, boolean>;
-export interface SourceIterable<I, O> {
+export interface SourceIterable<I, O> extends Iterable<[I, O]> {
   (input: I): O;
   (input: null): undefined | null | false;
   (): Iterable<[I, O]>;
@@ -25,7 +25,7 @@ export function single<K, V = boolean>(
 ): SourceIterable<K, V> {
   const actualValue = value === undefined ? true : value;
 
-  return (input?: K | null) => {
+  function get(input?: K | null) {
     if (input === undefined) {
       // return [[key, actualValue]] as any;
       return {
@@ -42,7 +42,13 @@ export function single<K, V = boolean>(
         return undefined;
       }
     }
-  };
+  }
+
+  return Object.assign(get, {
+    *[Symbol.iterator]() {
+      yield [key, actualValue] as [K, V];
+    }
+  });
 }
 
 function mapIterable<I, O>(transform: (v: I) => O) {
@@ -63,16 +69,15 @@ function mapIterable<I, O>(transform: (v: I) => O) {
   };
 }
 
+export function source<K, V>(source: ReadonlySet<K>): SourceIterable<K, V>;
+export function source<K, V>(source: ReadonlyArray<K>): SourceIterable<K, V>;
 export function source<K, V>(source: ReadonlyMap<K, V>): SourceIterable<K, V>;
 export function source<K extends string, V>(
   source: FormData
 ): SourceIterable<string, string>;
-export function source<T, V extends boolean>(
-  source: Iterable<T>
-): SourceIterable<T, V>;
 
 export function source<T, V>(
-  source: Iterable<T> | FormData
+  source: ReadonlySet<T> | ReadonlyArray<T> | ReadonlyMap<T, V> | FormData
 ): SourceIterable<T, V> {
   if (source instanceof Map) {
     const map = source;
@@ -85,7 +90,9 @@ export function source<T, V>(
         return map.get(input);
       }
     };
-    return get;
+    return Object.assign(get, {
+      [Symbol.iterator]: map.entries.bind(map)
+    });
   }
 
   if (source instanceof FormData) {
@@ -99,7 +106,9 @@ export function source<T, V>(
         return formData.get((input as unknown) as string);
       }
     };
-    return get;
+    return Object.assign(get, {
+      [Symbol.iterator]: (formData as any).entries.bind(formData)
+    });
   }
 
   if (source instanceof Set) {
@@ -112,7 +121,9 @@ export function source<T, V>(
         return source.has(input);
       }
     };
-    return get as SourceIterable<T, V>;
+    return Object.assign(get, {
+      [Symbol.iterator]: () => mapIterable(v => [v, true])(source)
+    }) as unknown as SourceIterable<T, V>;
   }
 
   if (Array.isArray(source)) {
@@ -126,143 +137,13 @@ export function source<T, V>(
         return array.includes(input);
       }
     };
-    return get as SourceIterable<T, V>;
+    return Object.assign(get, {
+      [Symbol.iterator]: () => mapIterable(v => [v, true])(array)
+    }) as unknown as SourceIterable<T, V>;
+    // return get as SourceIterable<T, V>;
   }
 
-  const store = new Set(source);
-  const get = (input?: T) => {
-    if (input === undefined) {
-      return {
-        [Symbol.iterator]() {
-          const iterator = store.keys()[Symbol.iterator]();
-          return {
-            next() {
-              const keyResult = iterator.next();
-              if (keyResult.done) {
-                return keyResult;
-              }
-
-              return {
-                value: [keyResult.value, true],
-                done: false,
-              };
-            },
-          };
-        },
-      } as Iterable<[T, V]>;
-      // type A = Generator
-      // return (function *entries() {
-
-      // })()
-      // return store.entries();
-    } else if (input === null) {
-      return false;
-    } else {
-      return store.has(input);
-    }
-  };
-  return get as SourceIterable<T, V>;
-}
-
-export function lookup<K, V>(source: ReadonlyMap<K, V>): [SourceIterable<K, V>];
-export function lookup<K extends string, V>(
-  source: FormData
-): [SourceIterable<string, string>];
-export function lookup<T, V extends boolean>(
-  source: Iterable<T>
-): [SourceIterable<T, V>];
-
-export function lookup<T, V>(
-  source: Iterable<T> | FormData
-): [SourceIterable<T, V>] {
-  if (source instanceof Map) {
-    const map = source;
-    const get = (input?: T | null) => {
-      if (input === undefined) {
-        return map.entries();
-      } else if (input === null) {
-        return undefined;
-      } else {
-        return map.get(input);
-      }
-    };
-    return [get];
-  }
-
-  if (source instanceof FormData) {
-    const formData = source;
-    const get = (input?: T | null) => {
-      if (input === undefined) {
-        return (formData as any).entries();
-      } else if (input === null) {
-        return undefined;
-      } else {
-        return formData.get((input as unknown) as string);
-      }
-    };
-    return [get];
-  }
-
-  if (source instanceof Set) {
-    const get = (input?: T | null) => {
-      if (input === undefined) {
-        return mapIterable(v => [v, true])(source);
-      } else if (input === null) {
-        return false;
-      } else {
-        return source.has(input);
-      }
-    };
-    return [get as SourceIterable<T, V>];
-  }
-
-  if (Array.isArray(source)) {
-    const array = source as Array<T>;
-    const get = (input?: T | null) => {
-      if (input === undefined) {
-        return mapIterable(v => [v, true])(array);
-      } else if (input === null) {
-        return false;
-      } else {
-        return array.includes(input);
-      }
-    };
-    return [get as SourceIterable<T, V>];
-  }
-
-  const store = new Set(source);
-  const get = (input?: T) => {
-    if (input === undefined) {
-      return {
-        [Symbol.iterator]() {
-          const iterator = store.keys()[Symbol.iterator]();
-          return {
-            next() {
-              const keyResult = iterator.next();
-              if (keyResult.done) {
-                return keyResult;
-              }
-
-              return {
-                value: [keyResult.value, true],
-                done: false,
-              };
-            },
-          };
-        },
-      } as Iterable<[T, V]>;
-      // type A = Generator
-      // return (function *entries() {
-
-      // })()
-      // return store.entries();
-    } else if (input === null) {
-      return false;
-    } else {
-      return store.has(input);
-    }
-  };
-  return [get as SourceIterable<T, V>];
+  throw new Error(`Unknown source ${typeof source}`);
 }
 
 export function complement<K>(
