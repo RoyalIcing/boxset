@@ -256,7 +256,7 @@ describe('union()', () => {
 
     expect(get('first')).toBe(1);
     expect(get('second')).toBe(2);
-    expect(get('third')).toBe(3);
+    expect(get('third')).toBe(-3);
     expect(get('fourth')).toBe(4);
     expect(get('missing')).toBe(undefined);
 
@@ -610,6 +610,17 @@ describe('into()', () => {
 });
 
 describe('example of everything', () => {
+  it('can use map with fallback', () => {
+    const paidPlans = source(new Map([['premium', 50], ['basic', 20]]));
+    const freePlan = always(0);
+    const costForPlan = union(paidPlans, freePlan);
+
+    expect(costForPlan('premium')).toBe(50);
+    expect(costForPlan('basic')).toBe(20);
+    expect(costForPlan('anything else')).toBe(0);
+    expect(costForPlan('foo')).toBe(0);
+  })
+
   it('works', () => {
     const dramas = source(['The Americans', 'The Sopranos', 'Breaking Bad']);
     const comedies = source(['Flight of the Conchords']);

@@ -157,29 +157,38 @@ export function complement<K>(
 
 export function union<K, V>(
   a: SourceIterable<K, V>,
+  b: Source<K, V>
+): Source<K, V>;
+export function union<K, V>(
+  a: SourceIterable<K, V>,
   b: SourceIterable<K, V>
-): SourceIterable<K, V> {
-  const get = (input?: K) => {
-    if (input === undefined) {
-      return new Map<K, V>(
-        (function*() {
-          yield* Array.from(a);
-          yield* Array.from(b);
-        })()
-      );
-    } else {
-      return b(input) || a(input);
+): SourceIterable<K, V>;
+
+export function union<K, V>(
+  a: SourceIterable<K, V>,
+  b: Source<K,V> | SourceIterable<K, V>
+): typeof b {
+  function get(input: K) {
+    const result = a(input);
+    if (typeof result === 'number') {
+      return result;
     }
+
+    return result || b(input);
   };
 
-  return Object.assign(get, {
-    *[Symbol.iterator]() {
+  if (Symbol.iterator in b) {
+    const iterable = function *() {
       yield* Array.from(a);
-      yield* Array.from(b);
-      // yield* a;
-      // yield* b;
+      yield* Array.from(b as Iterable<[K, V]>);
     }
-  }) as unknown as SourceIterable<K, V>;
+  
+    return Object.assign(get, {
+      [Symbol.iterator]: iterable
+    }) as unknown as SourceIterable<K, V>;
+  } else {
+    return get as Source<K, V>;
+  }
 }
 
 export function difference<K, V>(
