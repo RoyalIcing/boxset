@@ -192,7 +192,7 @@ describe('source()', () => {
 describe('complement()', () => {
   it('works with a Set', () => {
     const get = source(new Set(['first', 'second']));
-    const inverseGet = complement(get);
+    const inverseGet = complement<string>(get);
 
     expect(inverseGet('first')).toBe(false);
     expect(inverseGet('second')).toBe(false);
@@ -228,7 +228,7 @@ describe('union()', () => {
     expect(get('fourth')).toBe(true);
     expect(get('missing')).toBe(false);
 
-    expect(new Map(get())).toEqual(
+    expect(new Map(get)).toEqual(
       new Map([
         ['first', true],
         ['second', true],
@@ -260,7 +260,7 @@ describe('union()', () => {
     expect(get('fourth')).toBe(4);
     expect(get('missing')).toBe(undefined);
 
-    expect(new Map(get())).toEqual(
+    expect(new Map(get)).toEqual(
       new Map([
         ['first', 1],
         ['second', 2],
@@ -275,7 +275,7 @@ describe('difference()', () => {
   it('works with an Array and Set', () => {
     const a = source(['first', 'second', 'third']);
     const b = source(new Set(['third', 'fourth']));
-    const get = difference(a, b);
+    const get = difference<string, boolean>(a, b);
 
     expect(get('first')).toBe(true);
     expect(get('second')).toBe(true);
@@ -283,7 +283,7 @@ describe('difference()', () => {
     expect(get('fourth')).toBe(false);
     expect(get('missing')).toBe(false);
 
-    expect(new Map(get())).toEqual(
+    expect(new Map(get)).toEqual(
       new Map([
         ['first', true],
         ['second', true],
@@ -305,7 +305,7 @@ describe('difference()', () => {
         ['fourth', 4],
       ])
     );
-    const get = difference(a, b);
+    const get = difference<string, number>(a, b);
 
     expect(get('first')).toBe(1);
     expect(get('second')).toBe(2);
@@ -313,7 +313,7 @@ describe('difference()', () => {
     expect(get('fourth')).toBe(undefined);
     expect(get('missing')).toBe(undefined);
 
-    expect(new Map(get())).toEqual(
+    expect(new Map(get)).toEqual(
       new Map([
         ['first', 1],
         ['second', 2],
@@ -330,7 +330,7 @@ describe('difference()', () => {
       ])
     );
     const b = source(['third', 'fourth']);
-    const get = difference(a, b);
+    const get = difference<string, number | boolean>(a, b);
 
     expect(get('first')).toBe(1);
     expect(get('second')).toBe(2);
@@ -338,7 +338,7 @@ describe('difference()', () => {
     expect(get('fourth')).toBe(undefined);
     expect(get('missing')).toBe(undefined);
 
-    expect(new Map(get())).toEqual(
+    expect(new Map(get)).toEqual(
       new Map([
         ['first', 1],
         ['second', 2],
@@ -371,7 +371,7 @@ describe('intersection()', () => {
   it('works with an Array and Set', () => {
     const a = source(['first', 'second', 'third']);
     const b = source(new Set(['third', 'fourth']));
-    const get = intersection(a, b);
+    const get = intersection<string, boolean>(a, b);
 
     expect(get('first')).toBe(false);
     expect(get('second')).toBe(false);
@@ -379,7 +379,7 @@ describe('intersection()', () => {
     expect(get('fourth')).toBe(false);
     expect(get('missing')).toBe(false);
 
-    expect(new Map(get())).toEqual(new Map([['third', true]]));
+    expect(new Map(get)).toEqual(new Map([['third', true]]));
   });
 
   it('works with two Maps', () => {
@@ -396,7 +396,7 @@ describe('intersection()', () => {
         ['fourth', 4],
       ])
     );
-    const get = intersection(a, b);
+    const get = intersection<string, number>(a, b);
 
     expect(get('first')).toBe(undefined);
     expect(get('second')).toBe(undefined);
@@ -404,7 +404,7 @@ describe('intersection()', () => {
     expect(get('fourth')).toBe(undefined);
     expect(get('missing')).toBe(undefined);
 
-    expect(new Map(get())).toEqual(new Map([['third', -3]]));
+    expect(new Map(get)).toEqual(new Map([['third', -3]]));
   });
 
   it('works with a Map and an array', () => {
@@ -416,7 +416,7 @@ describe('intersection()', () => {
       ])
     );
     const b = source(['third', 'fourth']);
-    const get = intersection(a, b);
+    const get = intersection<string, number | boolean>(a, b);
 
     expect(get('first')).toBe(undefined);
     expect(get('second')).toBe(undefined);
@@ -424,7 +424,7 @@ describe('intersection()', () => {
     expect(get('fourth')).toBe(undefined);
     expect(get('missing')).toBe(undefined);
 
-    expect(new Map(get())).toEqual(new Map([['third', -3]]));
+    expect(new Map(get)).toEqual(new Map([['third', -3]]));
   });
 
   it('works with a Set and a function', () => {
