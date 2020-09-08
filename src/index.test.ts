@@ -160,33 +160,31 @@ describe('source()', () => {
     );
   });
 
-  it('errors with a generator function', () => {
-    expect(() =>
-      source(
-        (function*() {
-          yield 'abc';
-        })() as any
-      )
-    ).toThrowError('Unknown source object');
+  it('works with an Object', () => {
+    const object = {
+      first: 1,
+      second: 2,
+    };
+    const get = source<string, number>(object);
+
+    expect(get('first')).toBe(1);
+    expect(get('second')).toBe(2);
+    expect(get('missing')).toBe(undefined);
+    expect(new Map(get)).toEqual(
+      new Map([
+        ['first', 1],
+        ['second', 2],
+      ])
+    );
   });
 
-  // it('works with an object’s entries', () => {
-  //   const e = Object.entries({
-  //     'first': true,
-  //     'second': true
-  //   })
-  //   const get = source(e);
-
-  //   expect(get('first')).toBe(true);
-  //   expect(get('second')).toBe(true);
-  //   expect(get('missing' as any)).toBe(false);
-  //   expect(new Map(get())).toEqual(
-  //     new Map([
-  //       ['first', true],
-  //       ['second', true],
-  //     ])
-  //   );
-  // });
+  it('errors with a generator function', () => {
+    expect(() =>
+      source(function*() {
+        yield 'abc';
+      })
+    ).toThrowError('Unknown source function');
+  });
 });
 
 describe('complement()', () => {
@@ -610,8 +608,13 @@ describe('into()', () => {
 });
 
 describe('example of everything', () => {
-  it('can use map with fallback', () => {
-    const paidPlans = source(new Map([['premium', 50], ['basic', 20]]));
+  it('can use Map with fallback', () => {
+    const paidPlans = source(
+      new Map([
+        ['premium', 50],
+        ['basic', 20],
+      ])
+    );
     const freePlan = always(0);
     const costForPlan = union(paidPlans, freePlan);
 
@@ -619,9 +622,23 @@ describe('example of everything', () => {
     expect(costForPlan('basic')).toBe(20);
     expect(costForPlan('anything else')).toBe(0);
     expect(costForPlan('foo')).toBe(0);
-  })
+  });
 
-  it('works', () => {
+  it('can use Object with fallback', () => {
+    const paidPlans = source({
+      premium: 50,
+      basic: 20,
+    });
+    const freePlan = always(0);
+    const costForPlan = union(paidPlans, freePlan);
+
+    expect(costForPlan('premium')).toBe(50);
+    expect(costForPlan('basic')).toBe(20);
+    expect(costForPlan('anything else' as any)).toBe(0);
+    expect(costForPlan('foo' as any)).toBe(0);
+  });
+
+  it('works with arrays, sets, and functions', () => {
     const dramas = source(['The Americans', 'The Sopranos', 'Breaking Bad']);
     const comedies = source(['Flight of the Conchords']);
 

@@ -46,7 +46,7 @@ export function single<K, V = boolean>(
   return Object.assign(get, {
     *[Symbol.iterator]() {
       yield [key, actualValue] as [K, V];
-    }
+    },
   });
 }
 
@@ -68,15 +68,27 @@ function mapIterable<I, O>(transform: (v: I) => O) {
   };
 }
 
-export function source<K, V extends boolean>(source: ReadonlySet<K>): SourceIterable<K, V>;
-export function source<K, V extends boolean>(source: ReadonlyArray<K>): SourceIterable<K, V>;
+export function source<K, V extends boolean>(
+  source: ReadonlySet<K>
+): SourceIterable<K, V>;
+export function source<K, V extends boolean>(
+  source: ReadonlyArray<K>
+): SourceIterable<K, V>;
 export function source<K, V>(source: ReadonlyMap<K, V>): SourceIterable<K, V>;
 export function source<K extends string, V>(
   source: FormData
 ): SourceIterable<string, string>;
+export function source<K extends string, V>(
+  source: Record<K, V>
+): SourceIterable<K, V>;
 
 export function source<T, V>(
-  source: ReadonlySet<T> | ReadonlyArray<T> | ReadonlyMap<T, V> | FormData
+  source:
+    | ReadonlySet<T>
+    | ReadonlyArray<T>
+    | ReadonlyMap<T, V>
+    | Record<T extends string ? T : never, V>
+    | FormData
 ): SourceIterable<T, V> {
   if (source instanceof Map) {
     const map = source;
@@ -90,7 +102,7 @@ export function source<T, V>(
       }
     };
     return Object.assign(get, {
-      [Symbol.iterator]: map.entries.bind(map)
+      [Symbol.iterator]: map.entries.bind(map),
     });
   }
 
@@ -106,7 +118,7 @@ export function source<T, V>(
       }
     };
     return Object.assign(get, {
-      [Symbol.iterator]: (formData as any).entries.bind(formData)
+      [Symbol.iterator]: (formData as any).entries.bind(formData),
     });
   }
 
@@ -120,9 +132,9 @@ export function source<T, V>(
         return source.has(input);
       }
     };
-    return Object.assign(get, {
-      [Symbol.iterator]: () => mapIterable(v => [v, true])(source)
-    }) as unknown as SourceIterable<T, V>;
+    return (Object.assign(get, {
+      [Symbol.iterator]: () => mapIterable(v => [v, true])(source),
+    }) as unknown) as SourceIterable<T, V>;
   }
 
   if (Array.isArray(source)) {
@@ -136,9 +148,22 @@ export function source<T, V>(
         return array.includes(input);
       }
     };
-    return Object.assign(get, {
-      [Symbol.iterator]: () => mapIterable(v => [v, true])(array)
-    }) as unknown as SourceIterable<T, V>;
+    return (Object.assign(get, {
+      [Symbol.iterator]: () => mapIterable(v => [v, true])(array),
+    }) as unknown) as SourceIterable<T, V>;
+  }
+
+  if (typeof source === 'object') {
+    const get = (input: T | null) => {
+      if (input === null) {
+        return undefined;
+      } else {
+        return (source as Record<any, V>)[input];
+      }
+    };
+    return (Object.assign(get, {
+      [Symbol.iterator]: () => Object.entries(source).values(),
+    }) as unknown) as SourceIterable<T, V>;
   }
 
   throw new Error(`Unknown source ${typeof source}`);
@@ -166,7 +191,7 @@ export function union<K, V>(
 
 export function union<K, V>(
   a: SourceIterable<K, V>,
-  b: Source<K,V> | SourceIterable<K, V>
+  b: Source<K, V> | SourceIterable<K, V>
 ): typeof b {
   function get(input: K) {
     const result = a(input);
@@ -175,17 +200,17 @@ export function union<K, V>(
     }
 
     return result || b(input);
-  };
+  }
 
   if (Symbol.iterator in b) {
-    const iterable = function *() {
+    const iterable = function*() {
       yield* Array.from(a);
       yield* Array.from(b as Iterable<[K, V]>);
-    }
-  
-    return Object.assign(get, {
-      [Symbol.iterator]: iterable
-    }) as unknown as SourceIterable<K, V>;
+    };
+
+    return (Object.assign(get, {
+      [Symbol.iterator]: iterable,
+    }) as unknown) as SourceIterable<K, V>;
   } else {
     return get as Source<K, V>;
   }
@@ -195,7 +220,7 @@ export function difference<K, V>(
   a: SourceIterable<K, V>,
   b: Source<K, any>
 ): SourceIterable<K, V> {
-  function *iterable() {
+  function* iterable() {
     const iterator = a[Symbol.iterator]();
 
     while (true) {
@@ -223,9 +248,9 @@ export function difference<K, V>(
     }
   };
 
-  return Object.assign(get, {
-    [Symbol.iterator]: iterable
-  }) as unknown as SourceIterable<K, V>;
+  return (Object.assign(get, {
+    [Symbol.iterator]: iterable,
+  }) as unknown) as SourceIterable<K, V>;
 }
 
 export function intersection<K, V>(
@@ -262,9 +287,9 @@ export function intersection<K, V>(
     }
   };
 
-  return Object.assign(get, {
-    [Symbol.iterator]: iterable
-  }) as unknown as SourceIterable<K, V>;
+  return (Object.assign(get, {
+    [Symbol.iterator]: iterable,
+  }) as unknown) as SourceIterable<K, V>;
 }
 
 // export function intersection<K, V>(
