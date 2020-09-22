@@ -4,7 +4,21 @@ Problem: `Set` and `Map` are fantastic additions to JavaScript, providing better
 
 Boxset allows you to work with data structures such as [`Set`][mdn-set], [`Map`][mdn-map], [`FormData`][mdn-formdata] and interoperate between them.
 
-You can perform set operations such as `union`, `difference`, `complement`, `intersection`. Then output as `Set`, `Map`, `Object`, or `FormData`.
+It achieves this by conforming each of these collection into a function with the signature:
+
+```ts
+(key: Input) => Output
+```
+
+You can convert a collection using `source()`:
+
+```ts
+function source<Input, Output>(collection: Set<Input> | Map<Input, Output> | Array<Input> | FormData): (key: Input) => Output;
+```
+
+You can perform set operations such as `union`, `difference`, `complement`, `intersection`. Where possible these are done lazily, so you can combine multiple operations efficiently.
+
+You can use the resulting function, calling or iterating through it, or you can transform into a `Set`, `Map`, `Object`, or `FormData` using `create(outputType, source)`.
 
 ```ts
 import {
