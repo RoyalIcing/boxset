@@ -178,6 +178,23 @@ describe('source()', () => {
     );
   });
 
+  it('works with an HTMLElement dataset', () => {
+    const el = document.createElement('div');
+    el.dataset.first = 'FIRST';
+    el.dataset.second = 'SECOND';
+
+    const get = source(el.dataset);
+    expect(get('first')).toBe('FIRST');
+    expect(get('second')).toBe('SECOND');
+    expect(get('missing')).toBe(undefined);
+    expect(new Map(get)).toEqual(
+      new Map([
+        ['first', 'FIRST'],
+        ['second', 'SECOND'],
+      ])
+    );
+  })
+
   it('errors with a generator function', () => {
     expect(() =>
       source(function*() {
