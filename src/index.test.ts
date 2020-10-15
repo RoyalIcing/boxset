@@ -193,7 +193,7 @@ describe('source()', () => {
         ['second', 'SECOND'],
       ])
     );
-  })
+  });
 
   it('errors with a generator function', () => {
     expect(() =>
@@ -369,6 +369,26 @@ describe('difference()', () => {
       'The Sopranos',
     ]);
     const startingWithThe = (title: string) => title.startsWith('The ');
+    const showsNotStartingWithThe = difference(shows, startingWithThe);
+
+    expect(showsNotStartingWithThe('The Americans')).toEqual(false);
+    expect(showsNotStartingWithThe('The Sopranos')).toEqual(false);
+    expect(showsNotStartingWithThe('Breaking Bad')).toEqual(true);
+    expect(showsNotStartingWithThe('Boardwalk Empire')).toEqual(true);
+    expect(showsNotStartingWithThe('The Wire')).toEqual(false);
+    expect(create(showsNotStartingWithThe, Set)).toEqual(
+      new Set(['Breaking Bad', 'Boardwalk Empire'])
+    );
+  });
+
+  it('works with a Set and a Regex', () => {
+    const shows = source([
+      'The Americans',
+      'Breaking Bad',
+      'Boardwalk Empire',
+      'The Sopranos',
+    ]);
+    const startingWithThe = (title: string) => /^The /.test(title);
     const showsNotStartingWithThe = difference(shows, startingWithThe);
 
     expect(showsNotStartingWithThe('The Americans')).toEqual(false);
