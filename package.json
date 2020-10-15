@@ -20,7 +20,7 @@
   "peerDependencies": {},
   "husky": {
     "hooks": {
-      "pre-commit": "tsdx lint"
+      "pre-commit": "npm run lint"
     }
   },
   "prettier": {
@@ -32,6 +32,7 @@
   "name": "boxset",
   "author": "Patrick Smith",
   "module": "dist/boxset.esm.js",
+  "sideEffects": false,
   "devDependencies": {
     "esbuild": "^0.6.32",
     "husky": "^4.2.5",
