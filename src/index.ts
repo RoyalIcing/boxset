@@ -94,12 +94,11 @@ export function source<T, V>(
     | FormData
 ): SourceIterable<T, V> {
   if (source instanceof Map) {
-    const map = source;
     const get = (input?: T) => {
-      return map.get(input);
+      return source.get(input);
     };
     return Object.assign(get, {
-      [Symbol.iterator]: map.entries.bind(map),
+      [Symbol.iterator]: source.entries.bind(source),
     });
   }
 
@@ -126,16 +125,15 @@ export function source<T, V>(
   }
 
   if (Array.isArray(source)) {
-    const array = source as Array<T>;
     const get = (input?: T) => {
       if (input === undefined) {
         return false;
       } else {
-        return array.includes(input);
+        return source.includes(input);
       }
     };
     return (Object.assign(get, {
-      [Symbol.iterator]: () => mapIterable(v => [v, true])(array),
+      [Symbol.iterator]: () => mapIterable(v => [v, true])(source),
     }) as unknown) as SourceIterable<T, V>;
   }
 

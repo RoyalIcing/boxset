@@ -12,7 +12,7 @@
   },
   "scripts": {
     "start": "tsdx watch",
-    "build": "tsdx build && make -j 10 build",
+    "build": "tsdx build && make -j 10 esbuild",
     "test": "tsdx test",
     "lint": "tsdx lint src",
     "prepare": "npm run build"
