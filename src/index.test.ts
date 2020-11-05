@@ -80,6 +80,7 @@ describe('source()', () => {
     expect(get('first')).toBe(true);
     expect(get('second')).toBe(true);
     expect(get('missing')).toBe(false);
+    expect(get()).toBe(false);
     expect(new Map(get)).toEqual(
       new Map([
         ['first', true],
@@ -106,6 +107,7 @@ describe('source()', () => {
     expect(get('first')).toBe(true);
     expect(get('second')).toBe(true);
     expect(get('missing')).toBe(false);
+    expect(get()).toBe(false);
     expect(new Map(get)).toEqual(
       new Map([
         ['first', true],
@@ -135,6 +137,7 @@ describe('source()', () => {
     expect(get('first')).toBe(1);
     expect(get('second')).toBe(2);
     expect(get('missing')).toBe(undefined);
+    expect(get()).toBe(undefined);
     expect(new Map(get)).toEqual(
       new Map([
         ['first', 1],
@@ -152,6 +155,7 @@ describe('source()', () => {
     expect(get('first')).toBe('ONE');
     expect(get('second')).toBe('TWO');
     expect(get('missing')).toBe(null);
+    expect(get()).toBe(null);
     expect(new Map(get)).toEqual(
       new Map([
         ['first', 'ONE'],
@@ -170,6 +174,7 @@ describe('source()', () => {
     expect(get('first')).toBe(1);
     expect(get('second')).toBe(2);
     expect(get('missing')).toBe(undefined);
+    expect(get()).toBe(undefined);
     expect(new Map(get)).toEqual(
       new Map([
         ['first', 1],
@@ -187,6 +192,7 @@ describe('source()', () => {
     expect(get('first')).toBe('FIRST');
     expect(get('second')).toBe('SECOND');
     expect(get('missing')).toBe(undefined);
+    expect(get()).toBe(undefined);
     expect(new Map(get)).toEqual(
       new Map([
         ['first', 'FIRST'],
@@ -242,6 +248,7 @@ describe('union()', () => {
     expect(get('third')).toBe(true);
     expect(get('fourth')).toBe(true);
     expect(get('missing')).toBe(false);
+    expect(get()).toBe(false);
 
     expect(new Map(get)).toEqual(
       new Map([
@@ -274,6 +281,7 @@ describe('union()', () => {
     expect(get('third')).toBe(-3);
     expect(get('fourth')).toBe(4);
     expect(get('missing')).toBe(undefined);
+    expect(get()).toBe(undefined);
 
     expect(new Map(get)).toEqual(
       new Map([
@@ -283,6 +291,68 @@ describe('union()', () => {
         ['fourth', 4],
       ])
     );
+  });
+
+  it('works with two objects', () => {
+    const a = source({ first: 1, second: 2 });
+    const b = source({ third: 3, fourth: 4 });
+    const get = union(a, b);
+
+    expect(get('first')).toBe(1);
+    expect(get('second')).toBe(2);
+    expect(get('third')).toBe(3);
+    expect(get('fourth')).toBe(4);
+    expect(get('missing' as any)).toBe(undefined);
+
+    expect(new Map(get)).toEqual(
+      new Map([
+        ['first', 1],
+        ['second', 2],
+        ['third', 3],
+        ['fourth', 4],
+      ])
+    );
+  });
+
+  it('works with an object and always null', () => {
+    const a = source({ first: 1, second: 2 });
+    const b = always(null);
+    const get = union(a, b);
+
+    expect(get('first')).toBe(1);
+    expect(get('second')).toBe(2);
+    expect(get('missing')).toBe(null);
+  });
+
+  it('works with an object and always zero', () => {
+    const a = source({ first: 1, second: 2 });
+    const get = union(a, always(0));
+
+    expect(get('first')).toBe(1);
+    expect(get('second')).toBe(2);
+    expect(get('missing')).toBe(0);
+  });
+
+  it('works with an object and always zero', () => {
+    const a = source({ first: '1', second: '2' });
+    const b = always('');
+    const get = union(a, b);
+
+    expect(get('first')).toBe('1');
+    expect(get('second')).toBe('2');
+    expect(get('missing')).toBe('');
+  });
+
+  it('works with an object and throwing function', () => {
+    const a = source({ first: 1, second: 2 });
+    const b = () => {
+      throw new Error('Invalid key');
+    };
+    const get = union(a, b);
+
+    expect(get('first')).toBe(1);
+    expect(get('second')).toBe(2);
+    expect(() => get('missing')).toThrowError('Invalid key');
   });
 });
 

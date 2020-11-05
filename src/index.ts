@@ -1,11 +1,14 @@
 export interface Source<I, O> {
   (input: I): O;
 }
-export type Contains<I> = Source<I, boolean>;
-export interface SourceIterable<I, O> extends Iterable<[I, O]> {
-  (input: I): O;
-  (input: null): undefined | null | false;
+export interface NotFound {
+  (): undefined | null | false;
 }
+export type Contains<I> = Source<I, boolean>;
+export interface SourceIterable<I, O>
+  extends Source<I, O>,
+    Iterable<[I, O]>,
+    NotFound {}
 
 export interface Complemented {
   isComplement: true;
@@ -14,7 +17,7 @@ export interface Complemented {
 export const emptySet: Contains<string | symbol | number> = () => false;
 export const universalSet: Contains<string | symbol | number> = () => true;
 
-export function always<V>(value: V): Source<any, V> {
+export function always<O, I = any>(value: O): Source<I, O> {
   return () => value;
 }
 
@@ -92,14 +95,8 @@ export function source<T, V>(
 ): SourceIterable<T, V> {
   if (source instanceof Map) {
     const map = source;
-    const get = (input?: T | null) => {
-      if (input === undefined) {
-        return map.entries();
-      } else if (input === null) {
-        return undefined;
-      } else {
-        return map.get(input);
-      }
+    const get = (input?: T) => {
+      return map.get(input);
     };
     return Object.assign(get, {
       [Symbol.iterator]: map.entries.bind(map),
@@ -108,25 +105,16 @@ export function source<T, V>(
 
   if (source instanceof FormData) {
     const formData = source;
-    const get = (input?: T | null) => {
-      if (input === undefined) {
-        return (formData as any).entries();
-      } else if (input === null) {
-        return undefined;
-      } else {
-        return formData.get((input as unknown) as string);
-      }
-    };
+    const get = (input?: T) =>
+      formData.get(((input as unknown) as string) || '');
     return Object.assign(get, {
       [Symbol.iterator]: (formData as any).entries.bind(formData),
-    });
+    }) as any;
   }
 
   if (source instanceof Set) {
-    const get = (input?: T | null) => {
+    const get = (input?: T) => {
       if (input === undefined) {
-        return mapIterable(v => [v, true])(source);
-      } else if (input === null) {
         return false;
       } else {
         return source.has(input);
@@ -139,10 +127,8 @@ export function source<T, V>(
 
   if (Array.isArray(source)) {
     const array = source as Array<T>;
-    const get = (input?: T | null) => {
+    const get = (input?: T) => {
       if (input === undefined) {
-        return mapIterable(v => [v, true])(array);
-      } else if (input === null) {
         return false;
       } else {
         return array.includes(input);
@@ -154,8 +140,8 @@ export function source<T, V>(
   }
 
   if (typeof source === 'object') {
-    const get = (input: T | null) => {
-      if (input === null) {
+    const get = (input?: T) => {
+      if (input === undefined) {
         return undefined;
       } else {
         return (source as Record<any, V>)[input];
@@ -180,39 +166,41 @@ export function complement<K>(
   );
 }
 
-export function union<K, V>(
-  a: SourceIterable<K, V>,
-  b: Source<K, V>
-): Source<K, V>;
-export function union<K, V>(
-  a: SourceIterable<K, V>,
-  b: SourceIterable<K, V>
-): SourceIterable<K, V>;
+export function union<AI, AO, BI, BO>(
+  a: SourceIterable<AI, AO>,
+  b: SourceIterable<BI, BO>
+): SourceIterable<AI | BI, AO | BO>;
+export function union<AI, AO, BI, BO>(
+  a: SourceIterable<AI, AO>,
+  b: Source<BI, BO>
+): Source<AI | BI, AO | BO>;
 
-export function union<K, V>(
-  a: SourceIterable<K, V>,
-  b: Source<K, V> | SourceIterable<K, V>
-): typeof b {
-  function get(input: K) {
-    const result = a(input);
+export function union<AI, AO, BI, BO>(
+  a: SourceIterable<AI, AO>,
+  b: Source<BI, BO> | SourceIterable<BI, BO>
+): typeof b extends SourceIterable<BI, BO>
+  ? SourceIterable<AI | BI, AO | BO>
+  : Source<AI | BI, AO | BO> {
+  function get(input: AI | BI) {
+    const result = a(input as any);
     if (typeof result === 'number') {
       return result;
     }
 
-    return result || b(input);
+    return result || b(input as any);
   }
 
   if (Symbol.iterator in b) {
     const iterable = function*() {
       yield* Array.from(a);
-      yield* Array.from(b as Iterable<[K, V]>);
+      yield* Array.from(b as Iterable<[BI, BO]>);
     };
 
     return (Object.assign(get, {
       [Symbol.iterator]: iterable,
-    }) as unknown) as SourceIterable<K, V>;
+    }) as unknown) as SourceIterable<AI | BI, AO | BO>;
   } else {
-    return get as Source<K, V>;
+    return get as Source<AI | BI, AO | BO>;
   }
 }
 
@@ -242,7 +230,7 @@ export function difference<K, V>(
     } else {
       const bResult = b(input);
       if (bResult) {
-        return a(null);
+        return a();
       }
       return a(input);
     }
@@ -283,7 +271,7 @@ export function intersection<K, V>(
       if (!!aResult && !!bResult) {
         return aResult;
       }
-      return a(null);
+      return a();
     }
   };
 
