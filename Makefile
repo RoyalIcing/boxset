@@ -24,5 +24,6 @@ esbuild: dist/*
 
 .PHONY: build
 build:
+	npm t
 	npm run build
 	@$(MAKE) filesize

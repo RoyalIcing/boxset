@@ -54,6 +54,7 @@ describe('single()', () => {
     const get = single('some key');
     expect(get('some key')).toBe(true);
     expect(get('some other key')).toBe(false);
+    expect(get()).toBe(false);
     expect(new Map(get)).toEqual(new Map([['some key', true]]));
   });
 
@@ -61,6 +62,7 @@ describe('single()', () => {
     const get = single('some key', 'some value');
     expect(get('some key')).toBe('some value');
     expect(get('some other key')).toBe(undefined);
+    expect(get()).toBe(undefined);
     expect(new Map(get)).toEqual(new Map([['some key', 'some value']]));
   });
 
@@ -68,6 +70,7 @@ describe('single()', () => {
     const get = single('some key', 123);
     expect(get('some key')).toBe(123);
     expect(get('some other key')).toBe(undefined);
+    expect(get()).toBe(undefined);
     expect(new Map(get)).toEqual(new Map([['some key', 123]]));
   });
 });

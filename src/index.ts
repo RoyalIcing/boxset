@@ -28,14 +28,7 @@ export function single<K, V = boolean>(
   const actualValue = value === undefined ? true : value;
 
   function get(input?: K | null) {
-    if (input === undefined) {
-      // return [[key, actualValue]] as any;
-      return {
-        *[Symbol.iterator]() {
-          yield [key, actualValue];
-        },
-      } as any;
-    } else if (input === key) {
+    if (input === key) {
       return actualValue;
     } else {
       if (value === undefined) {
@@ -46,11 +39,11 @@ export function single<K, V = boolean>(
     }
   }
 
-  return Object.assign(get, {
+  return (Object.assign(get, {
     *[Symbol.iterator]() {
       yield [key, actualValue] as [K, V];
     },
-  });
+  }) as unknown) as SourceIterable<K, V>;
 }
 
 function mapIterable<I, O>(transform: (v: I) => O) {
