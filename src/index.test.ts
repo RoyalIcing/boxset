@@ -144,6 +144,17 @@ describe('source()', () => {
         ['second', 2],
       ])
     );
+
+    map.set('third', 3);
+
+    expect(get('third')).toBe(3);
+    expect(new Map(get)).toEqual(
+      new Map([
+        ['first', 1],
+        ['second', 2],
+        ['third', 3],
+      ])
+    );
   });
 
   it('works with a FormData', () => {
@@ -162,10 +173,21 @@ describe('source()', () => {
         ['second', 'TWO'],
       ])
     );
+
+    formData.set('three', 'THIRD');
+
+    expect(get('three')).toBe('THIRD');
+    expect(new Map(get)).toEqual(
+      new Map([
+        ['first', 'ONE'],
+        ['second', 'TWO'],
+        ['three', 'THIRD'],
+      ])
+    );
   });
 
   it('works with an Object', () => {
-    const object = {
+    const object: Record<string, number> = {
       first: 1,
       second: 2,
     };
@@ -179,6 +201,17 @@ describe('source()', () => {
       new Map([
         ['first', 1],
         ['second', 2],
+      ])
+    );
+
+    object['third'] = 3;
+
+    expect(get('third')).toBe(3);
+    expect(new Map(get)).toEqual(
+      new Map([
+        ['first', 1],
+        ['second', 2],
+        ['third', 3],
       ])
     );
   });
@@ -197,6 +230,17 @@ describe('source()', () => {
       new Map([
         ['first', 'FIRST'],
         ['second', 'SECOND'],
+      ])
+    );
+
+    el.dataset.third = 'THIRD';
+
+    expect(get('third')).toBe('THIRD');
+    expect(new Map(get)).toEqual(
+      new Map([
+        ['first', 'FIRST'],
+        ['second', 'SECOND'],
+        ['third', 'THIRD'],
       ])
     );
   });
