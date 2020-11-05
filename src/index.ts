@@ -95,15 +95,6 @@ export function source<T, V>(
     });
   }
 
-  if (source instanceof FormData) {
-    const formData = source;
-    const get = (input?: T) =>
-      formData.get(((input as unknown) as string) || '');
-    return Object.assign(get, {
-      [Symbol.iterator]: (formData as any).entries.bind(formData),
-    }) as any;
-  }
-
   if (source instanceof Set) {
     const get = (input?: T) => {
       if (input === undefined) {
@@ -128,6 +119,15 @@ export function source<T, V>(
     return (Object.assign(get, {
       [Symbol.iterator]: () => mapIterable(v => [v, true])(source),
     }) as unknown) as SourceIterable<T, V>;
+  }
+
+  if (typeof FormData === 'function' && source instanceof FormData) {
+    const formData = source;
+    const get = (input?: T) =>
+      formData.get(((input as unknown) as string) || '');
+    return Object.assign(get, {
+      [Symbol.iterator]: (formData as any).entries.bind(formData),
+    }) as any;
   }
 
   if (typeof source === 'object') {
