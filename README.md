@@ -1,4 +1,6 @@
-<h1 style="font-size: 300%; text-align: center;">📀 boxset</h1>
+<div align="center">
+  <h1>📀 boxset</h1>
+</div>
 
 Problem: `Set` and `Map` are fantastic additions to JavaScript, providing better capabilities and performance for common tasks. However, their APIs are threadbare — they don’t provide methods for even merging two sets!
 
