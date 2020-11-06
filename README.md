@@ -30,7 +30,7 @@ import {
   create,
 } from 'boxset';
 
-const dramas = source(['The Americans', 'The Sopranos', 'Breaking Bad']);
+const dramas = source(['The Americans', 'Breaking Bad', 'The Sopranos']);
 const comedies = source(['Flight of the Conchords']);
 
 const shows = union(dramas, comedies);
@@ -40,12 +40,12 @@ shows('Flight of the Conchords'); // true
 shows('The Wire'); // false
 
 const showsSet = create(Set, shows);
-// Set ['The Americans', 'The Sopranos', 'Breaking Bad', 'Flight of the Conchords']
+// Set ['The Americans', 'Breaking Bad', 'The Sopranos', 'Flight of the Conchords']
 
 const startingWithThe = (title: string) => title.startsWith('The ');
 const showsStartingWithThe = intersection(shows, startingWithThe);
 
-const showsStartingWithTheSet = create(Set, shows);
+const showsStartingWithTheSet = create(Set, showsStartingWithThe);
 // Set ['The Americans', 'The Sopranos']
 ```
 
