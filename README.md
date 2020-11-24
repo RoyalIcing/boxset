@@ -58,20 +58,6 @@ export interface SourceIterable<I, O>
     NotFound {}
 ```
 
-### Constants
-
-#### `emptySet`
-
-A collection that contains no keys, i.e. it returns `false` for any key.
-
-#### `universalSet`
-
-A collection that contains all keys, i.e. it returns `true` for any key.
-
-### `single(key, value?)`
-
-Creates a `SourceIterable` with the given key and optional value. If value is not provided, then the result will be a set containing just the key.
-
 ### `source(collection)`
 
 Create a `SourceIterable` with the given collection, which may be a `Set`, `Array`, `Map`, `FormData`, or plain object.
@@ -86,42 +72,77 @@ The types are used as follows:
 
 Collections are **referenced not copied**, so passing a collection to `source()` and then making changes to the original collection will be reflected.
 
+```typescript
+import { source } from 'boxset';
+
+const citrusFruitCosts = source(new Map([['orange', 3.00], ['lemon', 4.50]]));
+const otherFruitCosts = source({ apple: 2.50, pear: 3.00 });
+const citrusFruits = source(new Set(['orange', 'lemon']));
+const greenFruits = source(['apple', 'pear']);
+```
+
 ### `union(a, b)`
 
 Combines two sources into a union.
 
 The sources are referenced not copied. Source `a` is checked before checking `b`.
 
-The result will be `Iterable` if both sources were iterable.
+The result will be a `SourceIterable` if both sources were iterable, otherwise a non-iterable `Source`.
+
+```typescript
+import { source, union } from 'boxset';
+
+const citrusFruitCosts = source(new Map([['orange', 3.00], ['lemon', 4.50]]));
+const otherFruitCosts = source({ apple: 2.50, pear: 3.00 });
+const fruitCosts = union(citrusFruitCosts, otherFruitCosts);
+
+const fruitCostsMap = new Map(fruitCosts);
+// new Map([['orange', 3.00], ['lemon', 4.50], ['apple', 2.50], ['pear', 3.00]])
+
+const fruitCostsObject = Object.fromEntries(fruitCosts);
+// { orange: 3.00, lemon: 4.50, apple: 2.50, pear: 3.00 }
+```
 
 ### `difference(a, b)`
 
-Creates a source with all the elements of `a` except those that are in `b`.
+Creates a `SourceIterable` with all the elements of `a` except those that are in `b`.
 
 For example, we could create a source from a `Map` omitting entries from a `Set` like so:
 
 ```typescript
-import { difference } from 'boxset';
+import { source, difference } from 'boxset';
 
-const fruitCosts = new Map([['apple', 2.50], ['orange', 3.00], ['lemon', 4.50], ['pear', 3.00]]);
-const citrusFruits = new Set(['orange', 'lemon']);
+const fruitCosts = source(new Map([['apple', 2.50], ['orange', 3.00], ['lemon', 4.50], ['pear', 3.00]]));
+const citrusFruits = source(new Set(['orange', 'lemon']));
 const nonCitrusFruitCosts = difference(fruitCosts, citrusFruits);
 const nonCitrusFruitCostsMap = new Map(nonCitrusFruitCosts);
 // new Map([['apples', 2.50], ['pears', 3.00]]);
 ```
 
+We could do the same for an object omitting keys from an `Array`:
+
+```typescript
+import { source, difference } from 'boxset';
+
+const fruitCosts = source({ apple: 2.50, orange: 3.00, lemon: 4.50, pear: 3.00 });
+const citrusFruits = source(['orange', 'lemon']);
+const nonCitrusFruitCosts = difference(fruitCosts, citrusFruits);
+const nonCitrusFruitCostsObject = Object.fromEntries(nonCitrusFruitCosts);
+// { apple: 2.50, pear: 3.00 }
+```
+
 ### `intersection(a, b)`
 
-Creates a source with all the elements that are both in `a` and `b`.
+Creates a `SourceIterable` with all the elements that are both in `a` and `b`.
 
 For example, we could create a source from a `Map` keeping entries within a `Set` like so:
 
 ```typescript
-import { intersection } from 'boxset';
+import { source, intersection } from 'boxset';
 
 const fruitCosts = new Map([['apple', 2.50], ['orange', 3.00], ['lemon', 4.50], ['pear', 3.00]]);
 const citrusFruits = new Set(['orange', 'lemon']);
-const citrusFruitCosts = intersection(fruitCosts, citrusFruits);
+const citrusFruitCosts = intersection(source(fruitCosts), source(citrusFruits));
 const citrusFruitCostsMap = new Map(citrusFruitCosts);
 // new new Map([['oranges', 3.00], ['lemons', 4.50]]);
 ```
@@ -131,7 +152,7 @@ const citrusFruitCostsMap = new Map(citrusFruitCosts);
 Returns the opposite of what `a` would have returned. If a given key returned `true` for `a`, then the result would return `false`. And if a given key returned `false` for `a`, then the result would return `true`.
 
 ```typescript
-import { complement } from 'boxset';
+import { source, complement } from 'boxset';
 
 const citrusFruits = new Set(['orange', 'lemon']);
 const isCitrusFruit = source(citrusFruits);
@@ -141,6 +162,42 @@ isCitrusFruit('orange'); // true
 isNotCitrusFruit('orange'); // false
 isCitrusFruit('peach'); // false
 isNotCitrusFruit('peach'); // true
+```
+
+### `single(key, value?)`
+
+Creates a `SourceIterable` with the given key and optional value. If value is not provided, then the result will be a set containing just the key.
+
+```typescript
+import { single } from 'boxset';
+
+const pair = single('PI', 3.14159);
+pair('PI'); // 3.14159
+pair('TAU'); // undefined
+
+const setOfOne = single('some key');
+setOfOne('some key'); // true
+setOfOne('any other key'); // false
+```
+
+### Constants
+
+#### `emptySet`
+
+A collection that contains no keys, i.e. it returns `false` for any key.
+
+#### `universalSet`
+
+A collection that contains all keys, i.e. it returns `true` for any key.
+
+```typescript
+import { emptySet, universalSet } from 'boxset';
+
+emptySet('any key'); // false
+emptySet(42); // false
+
+universalSet('any key'); // true
+universalSet(42); // true
 ```
 
 [mdn-set]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
