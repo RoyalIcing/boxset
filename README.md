@@ -1,8 +1,13 @@
 <div align="center">
   <h1>📀 boxset</h1>
+  <a href="https://bundlephobia.com/result?p=boxset@0.3.1">
+    <img src="https://badgen.net/bundlephobia/minzip/boxset" alt="minified and gzipped size">
+    <img src="https://badgen.net/bundlephobia/min/boxset" alt="minified size">
+    <img src="https://badgen.net/bundlephobia/dependency-count/boxset" alt="zero dependencies">
+  </a>
 </div>
 
-<h2>Lazily evaluated set operations for all collections</h2>
+## Lazily evaluated set operations for all collections
 
 Problem: `Set` and `Map` are fantastic additions to JavaScript, providing better capabilities and performance for common tasks. However, their APIs are threadbare — they don’t provide methods for even merging two sets!
 
