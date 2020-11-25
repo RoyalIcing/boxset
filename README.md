@@ -9,9 +9,9 @@
 
 ## Lazily evaluated set operations for all collections
 
-Problem: `Set` and `Map` are fantastic additions to JavaScript, providing better capabilities and performance for common tasks. However, their APIs are threadbare — they don’t provide methods for even merging two sets!
+Problem: [`Set`][mdn-set] and [`Map`][mdn-map] are fantastic additions to JavaScript, providing better capabilities and performance for common tasks. However, their APIs are threadbare — they don’t provide methods for even merging two sets!
 
-Boxset allows you to work with data structures such as [`Set`][mdn-set], [`Map`][mdn-map], [`FormData`][mdn-formdata] and interoperate between them.
+Boxset allows you to work with data structures such as [`Set`][mdn-set], [`Map`][mdn-map], [`Array`][mdn-array], [`Object`][mdn-object] [`FormData`][mdn-formdata], and perform unions, intersections, differences, and interoperate between them.
 
 ```ts
 import {
@@ -207,6 +207,8 @@ universalSet(42); // true
 
 [mdn-set]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
 [mdn-map]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
+[mdn-object]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object
+[mdn-array]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
 [mdn-formdata]: https://developer.mozilla.org/en-US/docs/Web/API/FormData
 
 ---
