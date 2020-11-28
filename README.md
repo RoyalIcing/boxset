@@ -1,9 +1,9 @@
 <div align="center">
   <h1>📀 boxset</h1>
-  <a href="https://bundlephobia.com/result?p=boxset@0.3.1">
-    <img src="https://badgen.net/bundlephobia/minzip/boxset" alt="minified and gzipped size">
-    <img src="https://badgen.net/bundlephobia/min/boxset" alt="minified size">
-    <img src="https://badgen.net/bundlephobia/dependency-count/boxset" alt="zero dependencies">
+  <a href="https://bundlephobia.com/result?p=boxset">
+    <img src="https://badgen.net/bundlephobia/minzip/boxset@0.3.3" alt="minified and gzipped size">
+    <img src="https://badgen.net/bundlephobia/min/boxset@0.3.3" alt="minified size">
+    <img src="https://badgen.net/bundlephobia/dependency-count/boxset@0.3.3" alt="zero dependencies">
   </a>
 </div>
 
