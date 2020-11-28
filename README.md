@@ -42,6 +42,12 @@ const showsStartingWithTheSet = create(showsStartingWithThe, Set);
 // Set ['The Americans', 'The Sopranos']
 ```
 
+## Installation
+
+```console
+npm add parcook
+```
+
 ## Docs
 
 ### Types
