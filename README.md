@@ -73,7 +73,7 @@ export interface SourceIterable<I, O>
 
 Create a `SourceIterable` with the given collection, which may be a `Set`, `Array`, `Map`, `FormData`, or plain object.
 
-The types are used as follows:
+The return types for a given input are as follows:
 
 - `Set<A>` -> `SourceIterable<A, boolean>`
 - `Array<A>` -> `SourceIterable<A, boolean>`
