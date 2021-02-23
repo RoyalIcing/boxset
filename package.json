@@ -17,9 +17,7 @@
   "scripts": {
     "prepack": "npm run build",
     "dev": "microbundle watch",
-    "build": "microbundle --format modern,cjs,umd",
-    "build2": "tsdx build && make -j 10 esbuild",
-    "test": "tsdx test"
+    "build": "microbundle --format modern,cjs,umd"
   },
   "peerDependencies": {},
   "prettier": {
@@ -31,12 +29,8 @@
   "author": "Patrick Smith",
   "sideEffects": false,
   "devDependencies": {
-    "esbuild": "^0.6.32",
-    "husky": "^4.2.5",
-    "jest-zest": "^0.2.2",
     "microbundle": "^0.13.0",
-    "tsdx": "^0.13.3",
     "tslib": "^2.0.0",
-    "typescript": "^4.1.5"
+    "typescript": "^4.2.2"
   }
 }
