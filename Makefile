@@ -3,10 +3,10 @@ test:
 	watchexec -w src "clear && npm t"
 
 filesize:
-	@echo "raw:"
-	@cat dist/boxset.cjs.production.min.js | wc -c
-	@echo "gzip:"
-	@gzip -9 -c dist/boxset.cjs.production.min.js | wc -c
+	@echo "modern raw:"
+	@cat dist/boxset.modern.js | wc -c
+	@echo "modern gzip:"
+	@gzip -9 -c dist/boxset.modern.js | wc -c
 
 source_files: src/index.ts
 
@@ -24,6 +24,5 @@ esbuild: dist/*
 
 .PHONY: build
 build:
-	npm t
-	npm run build
+	npm run prepack
 	@$(MAKE) filesize

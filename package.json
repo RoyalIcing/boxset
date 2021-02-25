@@ -15,7 +15,7 @@
     "node": ">=10"
   },
   "scripts": {
-    "prepack": "npm run build",
+    "prepack": "tsc --noEmit && npm run build && jest",
     "dev": "microbundle watch",
     "build": "microbundle --format modern,cjs,umd",
     "test": "jest --watch"
