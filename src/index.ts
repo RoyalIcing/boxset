@@ -64,6 +64,22 @@ function mapIterable<I, O>(transform: (v: I) => O) {
   };
 }
 
+export function some<I>(input: Iterable<I>, test: (item: I) => boolean): boolean {
+  const iterator = input[Symbol.iterator]();
+
+  while (true) {
+    let item = iterator.next();
+
+    if (item.done) {
+      return false;
+    }
+
+    if (test(item.value)) {
+      return true;
+    }
+  }
+}
+
 export function source<K, V extends boolean>(
   source: ReadonlySet<K>
 ): SourceIterable<K, V>;

@@ -3,6 +3,7 @@ import {
   universalSet,
   always,
   single,
+  some,
   source,
   complement,
   union,
@@ -72,6 +73,37 @@ describe('single()', () => {
     expect(get('some other key')).toBe(undefined);
     expect(get()).toBe(undefined);
     expect(new Map(get)).toEqual(new Map([['some key', 123]]));
+  });
+});
+
+describe('some()', () => {
+  it('returns false for empty array', () => {
+    expect([].some(() => true)).toBe(false);
+    expect(some([], () => true)).toBe(false);
+  });
+  
+  function is3(n: number) {
+    return n === 3;
+  }
+  function is4(n: number) {
+    return n === 4;
+  }
+  function* yield123() {
+    yield 1;
+    yield 2;
+    yield 3;
+  }
+  
+  it('works with arrays, sets, generator functions', () => {
+    expect([1, 2, 3].some(is3)).toBe(true);
+    expect(some([1, 2, 3], is3)).toBe(true);
+    expect(some(new Set([1, 2, 3]), is3)).toBe(true);
+    expect(some(yield123(), is3)).toBe(true);
+    
+    expect([1, 2, 3].some(is4)).toBe(false);
+    expect(some([1, 2, 3], is4)).toBe(false);
+    expect(some(new Set([1, 2, 3]), is4)).toBe(false);
+    expect(some(yield123(), is4)).toBe(false);
   });
 });
 
