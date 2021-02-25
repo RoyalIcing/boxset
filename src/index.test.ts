@@ -4,6 +4,7 @@ import {
   always,
   single,
   some,
+  every,
   source,
   complement,
   union,
@@ -104,6 +105,37 @@ describe('some()', () => {
     expect(some([1, 2, 3], is4)).toBe(false);
     expect(some(new Set([1, 2, 3]), is4)).toBe(false);
     expect(some(yield123(), is4)).toBe(false);
+  });
+});
+
+describe('every()', () => {
+  it('returns true for empty array', () => {
+    expect([].every(() => false)).toBe(true);
+    expect(every([], () => false)).toBe(true);
+  });
+  
+  function isLessThan3(n: number) {
+    return n < 3;
+  }
+  function isLessThan4(n: number) {
+    return n < 4;
+  }
+  function* yield123() {
+    yield 1;
+    yield 2;
+    yield 3;
+  }
+  
+  it('works with arrays, sets, generator functions', () => {
+    expect([1, 2, 3].every(isLessThan4)).toBe(true);
+    expect(every([1, 2, 3], isLessThan4)).toBe(true);
+    expect(every(new Set([1, 2, 3]), isLessThan4)).toBe(true);
+    expect(every(yield123(), isLessThan4)).toBe(true);
+    
+    expect([1, 2, 3].every(isLessThan3)).toBe(false);
+    expect(every([1, 2, 3], isLessThan3)).toBe(false);
+    expect(every(new Set([1, 2, 3]), isLessThan3)).toBe(false);
+    expect(every(yield123(), isLessThan3)).toBe(false);
   });
 });
 

@@ -80,6 +80,10 @@ export function some<I>(input: Iterable<I>, test: (item: I) => boolean): boolean
   }
 }
 
+export function every<I>(input: Iterable<I>, test: (item: I) => boolean): boolean {
+  return !some(input, (item) => !test(item));
+}
+
 export function source<K, V extends boolean>(
   source: ReadonlySet<K>
 ): SourceIterable<K, V>;
