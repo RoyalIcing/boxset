@@ -27,7 +27,7 @@ jobs:
           CI: true
 
       - name: Test
-        run: npx jest
+        run: npm run test:ci
         env:
           CI: true
 

@@ -18,7 +18,8 @@
     "prepack": "tsc --noEmit && npm run build && jest",
     "dev": "microbundle watch",
     "build": "microbundle --format modern,cjs,umd",
-    "test": "jest --watch"
+    "test": "jest --watch",
+    "test:ci": "jest"
   },
   "peerDependencies": {},
   "prettier": {
