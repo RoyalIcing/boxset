@@ -12,7 +12,7 @@
     "src"
   ],
   "engines": {
-    "node": ">=10"
+    "node": ">=14"
   },
   "scripts": {
     "prepack": "tsc --noEmit && npm run build && jest",
