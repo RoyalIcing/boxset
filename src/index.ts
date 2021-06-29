@@ -394,3 +394,11 @@ export function into<K, V>(
     setter.apply(target, item.value);
   }
 }
+
+export function countBy<T>(source: Iterable<T>, member: (element: T) => boolean): number {
+  let count = 0;
+  for (const element of source) {
+    count += member(element) ? 1 : 0;
+  }
+  return count;
+}

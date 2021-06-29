@@ -12,6 +12,7 @@ import {
   intersection,
   create,
   into,
+  countBy,
 } from './index';
 
 describe('emptySet', () => {
@@ -82,7 +83,7 @@ describe('some()', () => {
     expect([].some(() => true)).toBe(false);
     expect(some([], () => true)).toBe(false);
   });
-  
+
   function is3(n: number) {
     return n === 3;
   }
@@ -94,13 +95,13 @@ describe('some()', () => {
     yield 2;
     yield 3;
   }
-  
+
   it('works with arrays, sets, generator functions', () => {
     expect([1, 2, 3].some(is3)).toBe(true);
     expect(some([1, 2, 3], is3)).toBe(true);
     expect(some(new Set([1, 2, 3]), is3)).toBe(true);
     expect(some(yield123(), is3)).toBe(true);
-    
+
     expect([1, 2, 3].some(is4)).toBe(false);
     expect(some([1, 2, 3], is4)).toBe(false);
     expect(some(new Set([1, 2, 3]), is4)).toBe(false);
@@ -113,7 +114,7 @@ describe('every()', () => {
     expect([].every(() => false)).toBe(true);
     expect(every([], () => false)).toBe(true);
   });
-  
+
   function isLessThan3(n: number) {
     return n < 3;
   }
@@ -125,13 +126,13 @@ describe('every()', () => {
     yield 2;
     yield 3;
   }
-  
+
   it('works with arrays, sets, generator functions', () => {
     expect([1, 2, 3].every(isLessThan4)).toBe(true);
     expect(every([1, 2, 3], isLessThan4)).toBe(true);
     expect(every(new Set([1, 2, 3]), isLessThan4)).toBe(true);
     expect(every(yield123(), isLessThan4)).toBe(true);
-    
+
     expect([1, 2, 3].every(isLessThan3)).toBe(false);
     expect(every([1, 2, 3], isLessThan3)).toBe(false);
     expect(every(new Set([1, 2, 3]), isLessThan3)).toBe(false);
@@ -822,6 +823,16 @@ describe('into()', () => {
       expect(formData.get('second')).toEqual('TWO');
       expect(formData.get('third')).toEqual('THREE');
     });
+  });
+});
+
+describe('countBy()', () => {
+  it('works with Arrays', () => {
+    expect(countBy([1, 2, 3, 11, 12, 13], n => n < 10)).toBe(3);
+  });
+
+  it('works with Sets', () => {
+    expect(countBy(new Set([1, 2, 3, 11, 12, 13]), n => n < 10)).toBe(3);
   });
 });
 
