@@ -13,6 +13,7 @@ import {
   create,
   into,
   countBy,
+  memoWith,
 } from './index';
 
 describe('emptySet', () => {
@@ -315,7 +316,7 @@ describe('source()', () => {
 
   it('errors with a generator function', () => {
     expect(() =>
-      source(function*() {
+      source(function* () {
         yield 'abc';
       })
     ).toThrowError('Unknown source function');
@@ -828,11 +829,90 @@ describe('into()', () => {
 
 describe('countBy()', () => {
   it('works with Arrays', () => {
-    expect(countBy([1, 2, 3, 11, 12, 13], n => n < 10)).toBe(3);
+    expect(countBy([1, 2, 3, 11, 12, 13], (n) => n < 10)).toBe(3);
   });
 
   it('works with Sets', () => {
-    expect(countBy(new Set([1, 2, 3, 11, 12, 13]), n => n < 10)).toBe(3);
+    expect(countBy(new Set([1, 2, 3, 11, 12, 13]), (n) => n < 10)).toBe(3);
+  });
+});
+
+describe('memoWith()', () => {
+  it('works with Maps', () => {
+    let calls = 0;
+    const store = new Map<number, number>();
+    const getter = memoWith(store, (n) => {
+      calls++;
+      return n * n;
+    });
+
+    expect(calls).toBe(0);
+
+    expect(getter(2)).toBe(4);
+    expect(calls).toBe(1);
+    expect(getter(2)).toBe(4);
+    expect(calls).toBe(1);
+
+    expect(getter(5)).toBe(25);
+    expect(calls).toBe(2);
+    expect(getter(5)).toBe(25);
+    expect(calls).toBe(2);
+
+    store.delete(2);
+    expect(getter(2)).toBe(4);
+    expect(calls).toBe(3);
+  });
+
+  it('works with WeakMaps', () => {
+    let calls = 0;
+    const store = new WeakMap<Number, number>();
+    const getter = memoWith(store, (n: Number) => {
+      calls++;
+      return n.valueOf() * n.valueOf();
+    });
+
+    expect(calls).toBe(0);
+
+    const TWO = Object(2);
+    const FIVE = Object(5);
+
+    expect(getter(TWO)).toBe(4);
+    expect(calls).toBe(1);
+    expect(getter(TWO)).toBe(4);
+    expect(calls).toBe(1);
+
+    expect(getter(FIVE)).toBe(25);
+    expect(calls).toBe(2);
+    expect(getter(FIVE)).toBe(25);
+    expect(calls).toBe(2);
+
+    store.delete(TWO);
+    expect(getter(TWO)).toBe(4);
+    expect(calls).toBe(3);
+  });
+
+  it('works with WeakMaps and Promises', async () => {
+    let calls = 0;
+    const store = new WeakMap<Number, Promise<number>>();
+    const getter = memoWith(store, (n: Number) => {
+      calls++;
+      return Promise.resolve(n.valueOf() * n.valueOf());
+    });
+
+    expect(calls).toBe(0);
+
+    const TWO = Object(2);
+    const FIVE = Object(5);
+
+    await expect(getter(TWO)).resolves.toBe(4);
+    expect(calls).toBe(1);
+    await expect(getter(TWO)).resolves.toBe(4);
+    expect(calls).toBe(1);
+
+    await expect(getter(FIVE)).resolves.toBe(25);
+    expect(calls).toBe(2);
+    await expect(getter(FIVE)).resolves.toBe(25);
+    expect(calls).toBe(2);
   });
 });
 

@@ -402,3 +402,21 @@ export function countBy<T>(source: Iterable<T>, member: (element: T) => boolean)
   }
   return count;
 }
+
+export function memoWith<Input, Output>(
+  store: {
+    get: (input: Input) => Output | undefined;
+    set: (input: Input, output: Output) => void;
+  },
+  calculate: (input: Input) => Output
+) {
+  return (input: Input): Output => {
+    const existing = store.get(input);
+    if (existing === undefined) {
+      const calculated = calculate(input);
+      store.set(input, calculated);
+      return calculated;
+    }
+    return existing;
+  };
+}
