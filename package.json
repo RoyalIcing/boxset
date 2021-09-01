@@ -21,7 +21,6 @@
     "test": "jest --watch",
     "test:ci": "jest"
   },
-  "peerDependencies": {},
   "prettier": {
     "printWidth": 80,
     "semi": true,
@@ -31,10 +30,11 @@
   "author": "Patrick Smith",
   "sideEffects": false,
   "devDependencies": {
-    "jest": "^27.0.6",
+    "@types/jest": "^27.0.1",
+    "jest": "^27.1.0",
     "microbundle": "^0.13.3",
-    "ts-jest": "^27.0.3",
-    "tslib": "^2.3.0",
-    "typescript": "^4.3.4"
+    "ts-jest": "^27.0.5",
+    "tslib": "^2.3.1",
+    "typescript": "^4.3.5"
   }
 }
