@@ -47,21 +47,13 @@ export function single<K, V = boolean>(
 }
 
 function mapIterable<I, O>(transform: (v: I) => O) {
-  return (input: Iterable<I>): Iterable<O> => {
-    return (function*() {
-      const iterator = input[Symbol.iterator]();
-
-      while (true) {
-        let item = iterator.next();
-
-        if (item.done) {
-          return;
-        }
-
-        yield transform(item.value);
+  return (input: Iterable<I>): Iterable<O> => ({
+    *[Symbol.iterator]() {
+      for (const item of input) {
+        yield transform(item);
       }
-    })();
-  };
+    },
+  });
 }
 
 export function some<I>(input: Iterable<I>, test: (item: I) => boolean): boolean {
@@ -123,9 +115,11 @@ export function source<T, V>(
         return source.has(input);
       }
     };
-    return (Object.assign(get, {
-      [Symbol.iterator]: () => mapIterable(v => [v, true])(source),
-    }) as unknown) as SourceIterable<T, V>;
+    return Object.assign(get, {
+      *[Symbol.iterator]() {
+        yield* mapIterable((v) => [v, true])(source);
+      },
+    }) as unknown as SourceIterable<T, V>;
   }
 
   if (Array.isArray(source)) {
@@ -136,9 +130,11 @@ export function source<T, V>(
         return source.includes(input);
       }
     };
-    return (Object.assign(get, {
-      [Symbol.iterator]: () => mapIterable(v => [v, true])(source),
-    }) as unknown) as SourceIterable<T, V>;
+    return Object.assign(get, {
+      *[Symbol.iterator]() {
+        yield* mapIterable((v) => [v, true])(source);
+      },
+    }) as unknown as SourceIterable<T, V>;
   }
 
   if (typeof FormData === 'function' && source instanceof FormData) {
