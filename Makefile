@@ -1,6 +1,6 @@
 .PHONY: test
 test:
-	watchexec -w src "clear && npm t"
+	npm t
 
 filesize:
 	@echo "modern raw:"
