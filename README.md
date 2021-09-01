@@ -45,7 +45,7 @@ const showsStartingWithTheSet = create(showsStartingWithThe, Set);
 ## Installation
 
 ```console
-npm add parcook
+npm add boxset
 ```
 
 ## Docs
