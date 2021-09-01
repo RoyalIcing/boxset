@@ -166,6 +166,12 @@ export function source<T, V>(
   throw new Error(`Unknown source ${typeof source}`);
 }
 
+export function conform<Input, Output>(source: ReadonlyMap<Input, Output> | (Input extends object ? WeakMap<Input, Output> : never)): {
+  get: (input: Input) => Output | undefined;
+} {
+  return source;
+}
+
 export function complement<K>(
   source: Source<K, any>
 ): Contains<K> & Complemented {
@@ -301,19 +307,19 @@ export function intersection<K, V>(
 // export const justKeys = mapIterable(([key]) => key);
 
 export function create<K, V>(
-  input: SourceIterable<K, V>,
+  input: Iterable<[K, V]>,
   collectionClass: ArrayConstructor
 ): Array<K>;
 export function create<K, V>(
-  input: SourceIterable<K, V>,
+  input: Iterable<[K, V]>,
   collectionClass: SetConstructor
 ): Set<K>;
 export function create<K, V>(
-  input: SourceIterable<K, V>,
+  input: Iterable<[K, V]>,
   collectionClass: MapConstructor
 ): Map<K, V>;
 export function create<K extends string | number | symbol, V>(
-  input: SourceIterable<K, V>,
+  input: Iterable<[K, V]>,
   collectionClass: ObjectConstructor
 ): Record<K, V>;
 
@@ -325,7 +331,7 @@ export function create<
     | ArrayConstructor
     | MapConstructor
     | ObjectConstructor
->(input: SourceIterable<K, V>, collectionClass: Collection) {
+>(input: Iterable<[K, V]>, collectionClass: Collection) {
   if (collectionClass === Set) {
     return new Set<K>(mapIterable<[K, any], K>(([key]) => key)(input));
   } else if (collectionClass === Array) {
